@@ -39,7 +39,7 @@
   .setup {
     height: 100%;
     overflow-y: auto;
-    padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+    padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
   }
   .setup h1 { font-size: 26px; text-align: center; margin-bottom: 4px; }
   .setup h1 .title-icon { height: 26px; vertical-align: -4px; border-radius: 7px; }
@@ -65,7 +65,7 @@
 
   /* ---------- Game screen ---------- */
   .topbar {
-    padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+    padding: calc(8px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
     text-align: center; background: var(--panel);
   }
   .topbar .round-line { font-size: 18px; font-weight: 700; }
@@ -75,8 +75,8 @@
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
     cursor: pointer; position: relative; gap: 6px; padding: 12px;
   }
-  .zone.a { background: linear-gradient(180deg, #12312e, #0e2522); }
-  .zone.b { background: linear-gradient(180deg, #33290f, #241d0b); }
+  .zone.a { background: linear-gradient(180deg, #12312e, #0e2522); padding-left: max(12px, env(safe-area-inset-left)); }
+  .zone.b { background: linear-gradient(180deg, #33290f, #241d0b); padding-right: max(12px, env(safe-area-inset-right)); }
   .zone:active.a { background: #174540; }
   .zone:active.b { background: #453913; }
   .zone .tname { font-size: 19px; font-weight: 700; letter-spacing: 0.3px; }
@@ -93,7 +93,8 @@
   .zone .pname { font-size: 17px; color: var(--muted); }
   .zone .hint { position: absolute; bottom: 12px; font-size: 13px; color: var(--muted); opacity: 0.8; padding: 0 8px; text-align: center; }
   .bottombar {
-    display: flex; gap: 10px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    display: flex; gap: 10px;
+    padding: 10px max(12px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
     background: var(--panel);
   }
   .bottombar button {
@@ -106,9 +107,13 @@
   /* ---------- Overlay (interstitial / winner) ---------- */
   .overlay {
     position: fixed; inset: 0; background: rgba(8, 13, 19, 0.92); z-index: 10;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center;
     padding: 24px; text-align: center; backdrop-filter: blur(4px);
+    overflow-y: auto;
   }
+  /* center when content fits, scroll from the top when it doesn't */
+  .overlay::before, .overlay::after { content: ''; margin: auto; }
+  .overlay > * { flex-shrink: 0; }
   .overlay .headline { font-size: 25px; font-weight: 800; margin-bottom: 16px; }
   .overlay .matchup-card {
     background: var(--panel); border-radius: 16px; padding: 20px 26px; margin-bottom: 8px; min-width: 260px;
@@ -135,6 +140,35 @@
   .overlay .link-btn { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 10px; }
   .overlay .trophy { font-size: 60px; margin-bottom: 10px; }
   .overlay .win-team { font-size: 34px; font-weight: 800; margin-bottom: 6px; }
+
+  /* ---------- Short viewports (phones in landscape) ---------- */
+  @media (max-height: 480px) {
+    .topbar { padding-top: calc(4px + env(safe-area-inset-top)); padding-bottom: 4px; }
+    .topbar .round-line { display: inline; font-size: 15px; }
+    .topbar .rally-line { display: inline; font-size: 14px; }
+    .topbar .rally-line::before { content: ' · '; }
+    .zone { gap: 4px; padding-top: 6px; padding-bottom: 6px; }
+    .zone .tname { font-size: 16px; }
+    .zone .serve-pill { font-size: 11px; padding: 3px 10px; letter-spacing: 1px; }
+    .zone .score { font-size: clamp(40px, 32vh, 140px); }
+    .zone .pname { display: none; }
+    .zone .hint { position: static; font-size: 13px; }
+    .bottombar { gap: 8px; padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+    .bottombar button { padding: 9px; font-size: 15px; }
+    .overlay { padding: 12px 24px; }
+    .overlay .headline { font-size: 19px; margin-bottom: 10px; }
+    .overlay .matchup-card { padding: 12px 20px; min-width: 240px; }
+    .overlay .matchup-card .seed-tag { font-size: 12px; margin-bottom: 6px; }
+    .overlay .matchup-card .vs { font-size: 20px; line-height: 1.5; }
+    .overlay .matchup-card .alloc { font-size: 13px; margin-top: 6px; }
+    .overlay .scoreline { font-size: 15px; margin-bottom: 8px; }
+    .overlay .scoreline b { font-size: 18px; }
+    .overlay .serve-line { font-size: 14px; padding: 6px 12px; margin-bottom: 12px; }
+    .overlay .big-btn { padding: 12px 40px; font-size: 18px; margin-bottom: 8px; }
+    .overlay .link-btn { font-size: 14px; padding: 6px; }
+    .overlay .trophy { font-size: 40px; margin-bottom: 6px; }
+    .overlay .win-team { font-size: 26px; }
+  }
 </style>
 </head>
 <body>
