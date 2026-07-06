@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f1720">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Pickleball Score Keeper</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<style>
+  :root {
+    --bg: #0f1720;
+    --panel: #1a2634;
+    --panel-2: #223142;
+    --text: #eef4f8;
+    --muted: #8fa3b5;
+    --teamA: #0fb9a6;
+    --teamA-dim: #0a7d72;
+    --teamB: #f4b740;
+    --teamB-dim: #b57f14;
+    --danger: #e2604f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  #app { height: 100%; height: 100dvh; display: flex; flex-direction: column; }
+
+  /* ---------- Setup screen ---------- */
+  .setup {
+    height: 100%;
+    overflow-y: auto;
+    padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+  }
+  .setup h1 { font-size: 26px; text-align: center; margin-bottom: 4px; }
+  .setup h1 .title-icon { height: 26px; vertical-align: -4px; border-radius: 7px; }
+  .setup .sub { text-align: center; color: var(--muted); font-size: 15px; margin-bottom: 20px; }
+  .team-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 560px; margin: 0 auto; }
+  @media (max-width: 420px) { .team-cards { grid-template-columns: 1fr; } }
+  .team-card { background: var(--panel); border-radius: 14px; padding: 14px; border-top: 4px solid var(--teamA); }
+  .team-card.b { border-top-color: var(--teamB); }
+  .team-card label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .team-card input {
+    width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #33465b;
+    background: var(--panel-2); color: var(--text); font-size: 16px;
+    min-height: 44px; /* Apple HIG minimum tap target */
+  }
+  .team-card input:focus { outline: 2px solid var(--teamA); border-color: transparent; }
+  .team-card.b input:focus { outline-color: var(--teamB); }
+  .start-btn {
+    display: block; width: 100%; max-width: 560px; margin: 20px auto 0; padding: 16px;
+    font-size: 18px; font-weight: 700; color: #06231f; background: var(--teamA);
+    border: none; border-radius: 12px; cursor: pointer;
+  }
+  .rules-note { max-width: 560px; margin: 16px auto 0; color: var(--muted); font-size: 14px; line-height: 1.6; text-align: center; }
+
+  /* ---------- Game screen ---------- */
+  .topbar {
+    padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+    text-align: center; background: var(--panel);
+  }
+  .topbar .round-line { font-size: 18px; font-weight: 700; }
+  .topbar .rally-line { font-size: 15px; color: var(--muted); margin-top: 3px; }
+  .zones { flex: 1; display: flex; min-height: 0; }
+  .zone {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; position: relative; gap: 6px; padding: 12px;
+  }
+  .zone.a { background: linear-gradient(180deg, #12312e, #0e2522); }
+  .zone.b { background: linear-gradient(180deg, #33290f, #241d0b); }
+  .zone:active.a { background: #174540; }
+  .zone:active.b { background: #453913; }
+  .zone .tname { font-size: 19px; font-weight: 700; letter-spacing: 0.3px; }
+  .zone.a .tname { color: var(--teamA); }
+  .zone.b .tname { color: var(--teamB); }
+  .serve-pill {
+    font-size: 13px; font-weight: 700; letter-spacing: 1.5px; padding: 5px 14px;
+    border-radius: 999px; text-transform: uppercase;
+  }
+  .serve-pill.hidden { visibility: hidden; }
+  .zone.a .serve-pill { background: var(--teamA); color: #06231f; }
+  .zone.b .serve-pill { background: var(--teamB); color: #2b1f04; }
+  .zone .score { font-size: clamp(72px, 24vw, 160px); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .zone .pname { font-size: 17px; color: var(--muted); }
+  .zone .hint { position: absolute; bottom: 12px; font-size: 13px; color: var(--muted); opacity: 0.8; padding: 0 8px; text-align: center; }
+  .bottombar {
+    display: flex; gap: 10px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    background: var(--panel);
+  }
+  .bottombar button {
+    flex: 1; padding: 14px; font-size: 17px; font-weight: 600; border: none; border-radius: 10px;
+    background: var(--panel-2); color: var(--text); cursor: pointer;
+  }
+  .bottombar button:disabled { opacity: 0.35; cursor: default; }
+  .bottombar button.danger { color: var(--danger); }
+
+  /* ---------- Overlay (interstitial / winner) ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(8, 13, 19, 0.92); z-index: 10;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px; text-align: center; backdrop-filter: blur(4px);
+  }
+  .overlay .headline { font-size: 25px; font-weight: 800; margin-bottom: 16px; }
+  .overlay .matchup-card {
+    background: var(--panel); border-radius: 16px; padding: 20px 26px; margin-bottom: 8px; min-width: 260px;
+  }
+  .overlay .matchup-card .seed-tag { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .overlay .matchup-card .vs { font-size: 25px; font-weight: 700; line-height: 1.7; }
+  .overlay .matchup-card .vs .a { color: var(--teamA); }
+  .overlay .matchup-card .vs .b { color: var(--teamB); }
+  .overlay .matchup-card .vs .v { color: var(--muted); font-size: 16px; margin: 0 10px; }
+  .overlay .matchup-card .alloc { font-size: 15px; color: var(--muted); margin-top: 10px; }
+  .overlay .scoreline { font-size: 17px; color: var(--muted); margin-bottom: 12px; }
+  .overlay .scoreline b { color: var(--text); font-size: 21px; }
+  .overlay .serve-line {
+    font-size: 16px; color: var(--muted); margin-bottom: 20px; cursor: pointer;
+    padding: 8px 14px; border-radius: 999px; background: var(--panel);
+  }
+  .overlay .serve-line b.a { color: var(--teamA); }
+  .overlay .serve-line b.b { color: var(--teamB); }
+  .overlay .serve-line .swap { font-size: 13px; opacity: 0.65; display: block; margin-top: 3px; }
+  .overlay .big-btn {
+    padding: 17px 48px; font-size: 20px; font-weight: 700; border: none; border-radius: 12px;
+    background: var(--teamA); color: #06231f; cursor: pointer; margin-bottom: 12px;
+  }
+  .overlay .link-btn { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 10px; }
+  .overlay .trophy { font-size: 60px; margin-bottom: 10px; }
+  .overlay .win-team { font-size: 34px; font-weight: 800; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+
+/* ===== Rules ===== */
+const ROUND_RALLIES = [8, 6, 4];   // rallies per matchup in rounds 1-3
+const TARGET = 33;                  // points to win
+const WIN_BY = 2;                   // 36-36 after all rounds -> golden point
+const SEEDS = 4;
+const STORE_KEY = 'pb-4v4-state-v1';
+
+/* ===== State ===== */
+function freshState(teams) {
+  return {
+    phase: 'between',        // 'setup' | 'between' | 'play' | 'done'
+    teams,                   // [{name, players:[4]}, {name, players:[4]}]
+    scores: [0, 0],
+    round: 0,                // 0..2
+    matchup: 0,              // seed index 0..3
+    rallies: 0,              // rallies played in current matchup
+    server: 0,               // team serving next rally (winner of last rally)
+    overtime: false,         // golden point at 36-36 after all rounds
+    note: 'Game on!',
+    hist: []
+  };
+}
+let S = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const st = JSON.parse(raw);
+      if (st.server === undefined) st.server = 0;      // migrate pre-serve-tracking saves
+      if (st.overtime === undefined) st.overtime = false;
+      return st;
+    }
+  } catch (e) {}
+  return { phase: 'setup', teams: defaultTeams() };
+}
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {}
+}
+function defaultTeams() {
+  return [
+    { name: '', players: ['', '', '', ''] },
+    { name: '', players: ['', '', '', ''] }
+  ];
+}
+
+/* ===== Game logic ===== */
+function snapshot() {
+  S.hist.push(JSON.stringify({
+    phase: S.phase, scores: S.scores, round: S.round, matchup: S.matchup,
+    rallies: S.rallies, server: S.server, overtime: S.overtime, note: S.note
+  }));
+  if (S.hist.length > 300) S.hist.shift();
+}
+
+function undo() {
+  const prev = S.hist.pop();
+  if (!prev) return;
+  Object.assign(S, JSON.parse(prev));
+  render();
+}
+
+function hasWinner() {
+  const [a, b] = S.scores;
+  // Golden point: at 36-36 after all rounds, the next rally wins outright.
+  const winBy = S.overtime ? 1 : WIN_BY;
+  if (a >= TARGET && a - b >= winBy) return 0;
+  if (b >= TARGET && b - a >= winBy) return 1;
+  return null;
+}
+
+function point(team) {
+  if (S.phase !== 'play') return;
+  snapshot();
+  S.scores[team]++;
+  S.rallies++;
+  S.server = team; // rally winner serves next
+
+  if (hasWinner() !== null) {
+    S.phase = 'done';
+    render();
+    return;
+  }
+
+  // Golden point has no rally allocation — a single rally decides it.
+  if (!S.overtime && S.rallies >= ROUND_RALLIES[S.round]) {
+    advanceMatchup();
+  }
+  render();
+}
+
+function advanceMatchup() {
+  const finishedSeed = S.matchup + 1;
+  S.rallies = 0;
+  S.matchup++;
+  if (S.matchup >= SEEDS) {
+    S.matchup = 0;
+    S.round++;
+  }
+  if (S.round >= ROUND_RALLIES.length) {
+    // All 3 rounds done, 36-36 — seed 4 pair plays a single golden point.
+    S.overtime = true;
+    S.round = ROUND_RALLIES.length - 1;
+    S.matchup = SEEDS - 1;
+    S.note = 'All square — Golden Point!';
+  } else if (S.matchup === 0) {
+    S.note = `Seed ${finishedSeed} matchup complete — that wraps Round ${S.round}!`;
+  } else {
+    S.note = `Seed ${finishedSeed} matchup complete!`;
+  }
+  S.phase = 'between';
+}
+
+function startGameFromSetup() {
+  const teams = [0, 1].map(t => ({
+    name: val(`tname${t}`) || (t === 0 ? 'Team A' : 'Team B'),
+    players: [0, 1, 2, 3].map(p => val(`p${t}_${p}`) || `${t === 0 ? 'A' : 'B'}${p + 1}`)
+  }));
+  S = freshState(teams);
+  render();
+}
+function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+function restart(keepTeams) {
+  if (!confirm(keepTeams ? 'Restart the game with the same teams?' : 'Start over with new teams?')) return;
+  S = keepTeams ? freshState(S.teams) : { phase: 'setup', teams: S.teams };
+  render();
+}
+
+/* ===== Rendering ===== */
+const app = document.getElementById('app');
+const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function render() {
+  save();
+  if (S.phase === 'setup') renderSetup();
+  else renderGame();
+}
+
+function renderSetup() {
+  const t = S.teams;
+  const card = (ti, cls, label) => `
+    <div class="team-card ${cls}">
+      <label>${label} name</label>
+      <input id="tname${ti}" placeholder="${label}" value="${esc(t[ti].name)}" autocomplete="off">
+      ${[0, 1, 2, 3].map(p => `
+        <label>Seed ${p + 1}</label>
+        <input id="p${ti}_${p}" placeholder="Player ${p + 1}" value="${esc(t[ti].players[p])}" autocomplete="off">
+      `).join('')}
+    </div>`;
+  app.innerHTML = `
+    <div class="setup">
+      <h1><img src="./icon.svg" class="title-icon" alt=""> 4v4 Team Singles</h1>
+      <div class="sub">Rally scoring · First to ${TARGET}, win by ${WIN_BY}</div>
+      <div class="team-cards">
+        ${card(0, 'a', 'Team A')}
+        ${card(1, 'b', 'Team B')}
+      </div>
+      <button class="start-btn" onclick="startGameFromSetup()">Start Game</button>
+      <div class="rules-note">
+        3 rounds &middot; seeds play their counterparts each round<br>
+        Round 1: 8 rallies per matchup &middot; Round 2: 6 &middot; Round 3: 4<br>
+        Team scores carry over between rounds
+      </div>
+    </div>`;
+}
+
+function renderGame() {
+  const [a, b] = S.scores;
+  const seed = S.matchup;
+  const pA = S.teams[0].players[seed];
+  const pB = S.teams[1].players[seed];
+  const alloc = ROUND_RALLIES[S.round];
+  const roundLabel = S.overtime ? 'Golden Point' : `Round ${S.round + 1} of 3`;
+  const rallyLabel = S.overtime
+    ? `Seed ${seed + 1} matchup · next rally wins it all`
+    : `Seed ${seed + 1} matchup · Rally ${Math.min(S.rallies + 1, alloc)} of ${alloc}`;
+
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="round-line">${roundLabel}</div>
+      <div class="rally-line">${rallyLabel}</div>
+    </div>
+    <div class="zones">
+      <div class="zone a" onpointerdown="point(0)">
+        <div class="tname">${esc(S.teams[0].name)}</div>
+        <div class="serve-pill ${S.server === 0 ? '' : 'hidden'}">🥎 Serving</div>
+        <div class="score">${a}</div>
+        <div class="pname">${esc(pA)} on court</div>
+        <div class="hint">tap when ${esc(pA)} wins the rally</div>
+      </div>
+      <div class="zone b" onpointerdown="point(1)">
+        <div class="tname">${esc(S.teams[1].name)}</div>
+        <div class="serve-pill ${S.server === 1 ? '' : 'hidden'}">🥎 Serving</div>
+        <div class="score">${b}</div>
+        <div class="pname">${esc(pB)} on court</div>
+        <div class="hint">tap when ${esc(pB)} wins the rally</div>
+      </div>
+    </div>
+    <div class="bottombar">
+      <button onclick="undo()" ${S.hist.length ? '' : 'disabled'}>↩︎ Undo</button>
+      <button class="danger" onclick="restart(true)">Restart</button>
+      <button onclick="restart(false)">New Teams</button>
+    </div>
+    ${S.phase === 'between' ? interstitial() : ''}
+    ${S.phase === 'done' ? winnerOverlay() : ''}`;
+}
+
+function interstitial() {
+  const seed = S.matchup;
+  const pA = S.teams[0].players[seed];
+  const pB = S.teams[1].players[seed];
+  const alloc = ROUND_RALLIES[S.round];
+  return `
+    <div class="overlay">
+      <div class="headline">${esc(S.note)}</div>
+      <div class="matchup-card">
+        <div class="seed-tag">${S.overtime ? 'Golden Point' : `Round ${S.round + 1}`} · Seed ${seed + 1} up next</div>
+        <div class="vs"><span class="a">${esc(pA)}</span><span class="v">vs</span><span class="b">${esc(pB)}</span></div>
+        <div class="alloc">${S.overtime ? 'Sudden death — one rally decides the game' : `${alloc} rallies this round`}</div>
+      </div>
+      <div class="scoreline">${esc(S.teams[0].name)} <b>${S.scores[0]}</b> — <b>${S.scores[1]}</b> ${esc(S.teams[1].name)}</div>
+      ${serveLine()}
+      <button class="big-btn" onclick="S.phase='play';render()">Start Rallies</button>
+      ${S.hist.length ? '<button class="link-btn" onclick="undo()">↩︎ Undo last rally</button>' : ''}
+    </div>`;
+}
+
+function serveLine() {
+  const srv = S.server;
+  const player = S.teams[srv].players[S.matchup];
+  const started = S.scores[0] + S.scores[1] > 0;
+  const why = started ? 'won the last rally' : 'first serve';
+  return `
+    <div class="serve-line" onclick="S.server=1-S.server;render()">
+      🥎 <b class="${srv === 0 ? 'a' : 'b'}">${esc(player)}</b> serves (${why})<span class="swap">tap to swap</span>
+    </div>`;
+}
+
+function winnerOverlay() {
+  const w = hasWinner();
+  return `
+    <div class="overlay">
+      <div class="trophy">🏆</div>
+      <div class="win-team" style="color:${w === 0 ? 'var(--teamA)' : 'var(--teamB)'}">${esc(S.teams[w].name)} wins!</div>
+      <div class="scoreline"><b>${S.scores[0]}</b> — <b>${S.scores[1]}</b></div>
+      <button class="big-btn" onclick="restart(true)">Rematch</button>
+      <button class="link-btn" onclick="restart(false)">New Teams</button>
+      <button class="link-btn" onclick="undo()">↩︎ Undo last rally</button>
+    </div>`;
+}
+
+/* ===== Keep screen awake during play ===== */
+let wakeLock = null;
+async function keepAwake() {
+  try {
+    if ('wakeLock' in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') keepAwake();
+});
+document.addEventListener('pointerdown', keepAwake, { once: true });
+
+/* ===== PWA ===== */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+render();
+</script>
+</body>
+</html>
