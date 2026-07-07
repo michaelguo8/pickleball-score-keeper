@@ -41,35 +41,35 @@
     overflow-y: auto;
     padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
   }
-  .setup h1 { font-size: 26px; text-align: center; margin-bottom: 4px; }
-  .setup h1 .title-icon { height: 26px; vertical-align: -4px; border-radius: 7px; }
-  .setup .sub { text-align: center; color: var(--muted); font-size: 15px; margin-bottom: 20px; }
+  .setup h1 { font-size: 32px; text-align: center; margin-bottom: 6px; }
+  .setup h1 .title-icon { height: 32px; vertical-align: -5px; border-radius: 8px; }
+  .setup .sub { text-align: center; color: var(--muted); font-size: 18px; margin-bottom: 22px; }
   .team-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 560px; margin: 0 auto; }
   @media (max-width: 420px) { .team-cards { grid-template-columns: 1fr; } }
   .team-card { background: var(--panel); border-radius: 14px; padding: 14px; border-top: 4px solid var(--teamA); }
   .team-card.b { border-top-color: var(--teamB); }
-  .team-card label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .team-card label { display: block; font-size: 15px; color: var(--muted); margin: 14px 0 5px; text-transform: uppercase; letter-spacing: 0.5px; }
   .team-card input {
-    width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #33465b;
-    background: var(--panel-2); color: var(--text); font-size: 16px;
-    min-height: 44px; /* Apple HIG minimum tap target */
+    width: 100%; padding: 13px 14px; border-radius: 9px; border: 1px solid #33465b;
+    background: var(--panel-2); color: var(--text); font-size: 18px;
+    min-height: 50px;
   }
   .team-card input:focus { outline: 2px solid var(--teamA); border-color: transparent; }
   .team-card.b input:focus { outline-color: var(--teamB); }
   .start-btn {
-    display: block; width: 100%; max-width: 560px; margin: 20px auto 0; padding: 16px;
-    font-size: 18px; font-weight: 700; color: #06231f; background: var(--teamA);
+    display: block; width: 100%; max-width: 560px; margin: 22px auto 0; padding: 18px;
+    font-size: 21px; font-weight: 700; color: #06231f; background: var(--teamA);
     border: none; border-radius: 12px; cursor: pointer;
   }
-  .rules-note { max-width: 560px; margin: 16px auto 0; color: var(--muted); font-size: 14px; line-height: 1.6; text-align: center; }
+  .rules-note { max-width: 560px; margin: 18px auto 0; color: var(--muted); font-size: 16px; line-height: 1.65; text-align: center; }
 
   /* ---------- Game screen ---------- */
   .topbar {
     padding: calc(8px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
     text-align: center; background: var(--panel);
   }
-  .topbar .round-line { font-size: 18px; font-weight: 700; }
-  .topbar .rally-line { font-size: 15px; color: var(--muted); margin-top: 3px; }
+  .topbar .round-line { font-size: 22px; font-weight: 700; }
+  .topbar .rally-line { font-size: 17px; color: var(--muted); margin-top: 4px; }
   .zones { flex: 1; display: flex; min-height: 0; position: relative; }
   .zone {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -81,20 +81,20 @@
   .zones .zone:last-of-type { padding-right: max(12px, env(safe-area-inset-right)); }
   .zone:active.a { background: #174540; }
   .zone:active.b { background: #453913; }
-  .zone .tname { font-size: 19px; font-weight: 700; letter-spacing: 0.3px; }
+  .zone .tname { font-size: 23px; font-weight: 700; letter-spacing: 0.3px; }
   .zone.a .tname { color: var(--teamA); }
   .zone.b .tname { color: var(--teamB); }
   .serve-pill {
-    font-size: 13px; font-weight: 700; letter-spacing: 1.5px; padding: 5px 14px;
+    font-size: 15px; font-weight: 700; letter-spacing: 1.5px; padding: 6px 15px;
     border-radius: 999px; text-transform: uppercase;
-    display: inline-flex; align-items: center; gap: 6px;
+    display: inline-flex; align-items: center; gap: 7px;
   }
   .serve-pill.hidden { visibility: hidden; }
   .zone.a .serve-pill { background: var(--teamA); color: #06231f; }
   .zone.b .serve-pill { background: var(--teamB); color: #2b1f04; }
   .zone .score { font-size: clamp(72px, 24vw, 160px); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
-  .zone .pname { font-size: 17px; color: var(--muted); }
-  .zone .hint { position: absolute; bottom: 12px; font-size: 13px; color: var(--muted); opacity: 0.8; padding: 0 8px; text-align: center; }
+  .zone .pname { font-size: 20px; color: var(--muted); }
+  .zone .hint { position: absolute; bottom: 12px; font-size: 16px; color: var(--muted); opacity: 0.8; padding: 0 8px; text-align: center; }
   .swap-btn {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
     width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33465b;
@@ -108,8 +108,8 @@
     background: var(--panel);
   }
   .bottombar button {
-    flex: 1; padding: 14px; font-size: 17px; font-weight: 600; border: none; border-radius: 10px;
-    background: var(--panel-2); color: var(--text); cursor: pointer;
+    flex: 1; padding: 15px 8px; font-size: 19px; font-weight: 600; border: none; border-radius: 10px;
+    background: var(--panel-2); color: var(--text); cursor: pointer; white-space: nowrap;
   }
   .bottombar button:disabled { opacity: 0.35; cursor: default; }
   .bottombar button.danger { color: var(--danger); }
@@ -128,108 +128,106 @@
   .itl { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 380px; }
   .itl-status { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .eyebrow {
-    display: inline-flex; align-items: center; gap: 7px; max-width: 100%;
+    display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
     background: rgba(238, 244, 248, 0.05); border: 1px solid rgba(238, 244, 248, 0.12);
-    border-radius: 16px; padding: 6px 14px; color: #a9bccb;
-    font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    border-radius: 18px; padding: 8px 16px; color: #a9bccb;
+    font-size: 15px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
   }
   .eyebrow.gold { background: rgba(244, 183, 64, 0.1); border-color: rgba(244, 183, 64, 0.3); color: var(--teamB); }
-  .scoreboard { display: flex; align-items: center; justify-content: center; gap: 20px; }
-  .scoreboard .lbl { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .scoreboard { display: flex; align-items: center; justify-content: center; gap: 22px; }
+  .scoreboard .lbl { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
   .scoreboard .lbl.a { color: var(--teamA); }
   .scoreboard .lbl.b { color: var(--teamB); }
-  .scoreboard .num { font-size: 48px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .scoreboard .num { font-size: 56px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
   .scoreboard .trail .num { color: rgba(238, 244, 248, 0.65); }
-  .scoreboard .dash { font-size: 20px; color: var(--muted); }
-  .progress { width: 76%; max-width: 260px; }
+  .scoreboard .dash { font-size: 24px; color: var(--muted); }
+  .progress { width: 78%; max-width: 280px; }
   .progress .segs { display: flex; gap: 3px; }
-  .progress .seg { flex: 1; height: 4px; border-radius: 2px; background: #1d2b3a; }
+  .progress .seg { flex: 1; height: 5px; border-radius: 2px; background: #1d2b3a; }
   .progress .seg.done { background: #93a7b8; }
   .progress .seg.next { background: rgba(238, 244, 248, 0.38); }
-  .progress .cap { font-size: 13px; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
-  .itl-card { background: var(--panel); border: 1px solid rgba(51, 70, 91, 0.55); border-radius: 16px; padding: 16px; }
+  .progress .cap { font-size: 16px; color: var(--muted); margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .itl-card { background: var(--panel); border: 1px solid rgba(51, 70, 91, 0.55); border-radius: 16px; padding: 18px; }
   .itl-card .chiprow { display: flex; align-items: center; justify-content: space-between; }
   .itl-card .chip {
-    background: var(--panel-2); border-radius: 999px; padding: 4px 10px; color: #c7d5e0;
-    font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    background: var(--panel-2); border-radius: 999px; padding: 5px 12px; color: #c7d5e0;
+    font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
   }
   .itl-card .chip.gold { background: rgba(244, 183, 64, 0.14); color: var(--teamB); }
-  .itl-card .meta { font-size: 14px; color: var(--muted); }
-  .itl-card .vs { margin: 14px 0 4px; }
-  .itl-card .vs .p { font-size: 26px; font-weight: 800; }
+  .itl-card .meta { font-size: 17px; color: var(--muted); }
+  .itl-card .vs { margin: 15px 0 5px; }
+  .itl-card .vs .p { font-size: 31px; font-weight: 800; }
   .itl-card .vs .p.a { color: var(--teamA); }
   .itl-card .vs .p.b { color: var(--teamB); }
-  .itl-card .vs .v { font-size: 14px; color: var(--muted); margin: 0 10px; }
-  .itl-card .alloc { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
-  .serve-static { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 16px; }
+  .itl-card .vs .v { font-size: 16px; color: var(--muted); margin: 0 11px; }
+  .itl-card .alloc { font-size: 17px; color: var(--muted); margin-bottom: 14px; }
+  .serve-static { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 18px; }
   .serve-static b.a { color: var(--teamA); }
   .serve-static b.b { color: var(--teamB); }
   .serve-static .why { color: var(--muted); }
-  .serve-pick { display: flex; align-items: center; gap: 10px; }
-  .serve-pick .lbl { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .serve-pick { display: flex; align-items: center; gap: 11px; }
+  .serve-pick .lbl { font-size: 15px; color: var(--muted); white-space: nowrap; }
   .serve-pick .svc { flex: 1; display: flex; gap: 3px; background: #16202c; border: 1px solid #33465b; border-radius: 12px; padding: 3px; }
   .serve-pick .svc button {
-    flex: 1; height: 44px; border: none; border-radius: 9px; background: none; cursor: pointer;
-    font-size: 15px; font-weight: 600; color: var(--muted);
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex: 1; height: 50px; border: none; border-radius: 9px; background: none; cursor: pointer;
+    font-size: 18px; font-weight: 600; color: var(--muted);
+    display: flex; align-items: center; justify-content: center; gap: 7px;
   }
   .serve-pick .svc button.on { font-weight: 700; }
   .serve-pick .svc button.on.a { background: rgba(15, 185, 166, 0.16); color: var(--teamA); }
   .serve-pick .svc button.on.b { background: rgba(244, 183, 64, 0.16); color: var(--teamB); }
-  .serve-cap { font-size: 13px; color: var(--muted); margin-top: 8px; }
   .itl-actions { display: flex; flex-direction: column; gap: 10px; }
   .itl-primary {
-    order: -1; width: 100%; height: 50px; font-size: 17px; font-weight: 700;
+    order: -1; width: 100%; height: 56px; font-size: 20px; font-weight: 700;
     border: none; border-radius: 12px; background: var(--teamA); color: #06231f; cursor: pointer;
   }
   .itl-secondary { display: flex; gap: 10px; }
   .itl-ghost {
-    flex: 1; height: 44px; font-size: 15px; font-weight: 600; cursor: pointer;
+    flex: 1; height: 50px; font-size: 17px; font-weight: 600; cursor: pointer;
     background: none; border: 1px solid rgba(238, 244, 248, 0.28); border-radius: 10px; color: #cbd8e4;
   }
   .itl-ghost:disabled { opacity: 0.35; cursor: default; }
   .win { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; max-width: 340px; }
   .win .itl-actions { width: 100%; margin-top: 10px; }
-  .overlay .scoreline { font-size: 17px; color: var(--muted); }
-  .overlay .scoreline b { color: var(--text); font-size: 21px; }
-  .overlay .trophy { font-size: 60px; }
-  .overlay .win-team { font-size: 34px; font-weight: 800; }
+  .overlay .scoreline { font-size: 20px; color: var(--muted); }
+  .overlay .scoreline b { color: var(--text); font-size: 24px; }
+  .overlay .trophy { font-size: 66px; }
+  .overlay .win-team { font-size: 40px; font-weight: 800; }
 
   /* ---------- Short viewports (phones in landscape) ---------- */
   @media (max-height: 480px) {
     .topbar { padding-top: calc(4px + env(safe-area-inset-top)); padding-bottom: 4px; }
-    .topbar .round-line { display: inline; font-size: 15px; }
-    .topbar .rally-line { display: inline; font-size: 14px; }
+    .topbar .round-line { display: inline; font-size: 18px; }
+    .topbar .rally-line { display: inline; font-size: 16px; }
     .topbar .rally-line::before { content: ' · '; }
     .zone { gap: 4px; padding-top: 6px; padding-bottom: 6px; }
-    .zone .tname { font-size: 16px; }
-    .zone .serve-pill { font-size: 11px; padding: 3px 10px; letter-spacing: 1px; }
-    .zone .score { font-size: clamp(40px, 32vh, 140px); }
+    .zone .tname { font-size: 19px; }
+    .zone .serve-pill { font-size: 13px; padding: 4px 11px; letter-spacing: 1px; }
+    .zone .score { font-size: clamp(44px, 32vh, 140px); }
     .zone .pname { display: none; }
-    .zone .hint { position: static; font-size: 13px; }
+    .zone .hint { position: static; font-size: 15px; }
     .bottombar { gap: 8px; padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
-    .bottombar button { padding: 9px; font-size: 15px; }
+    .bottombar button { padding: 10px; font-size: 17px; }
     .overlay { padding: 12px 20px; }
-    .itl { display: grid; grid-template-columns: 40% 1fr; gap: 12px; max-width: 640px; align-items: center; }
+    .itl { display: grid; grid-template-columns: 40% 1fr; gap: 14px; max-width: 660px; align-items: center; }
     .itl-status { gap: 10px; }
-    .eyebrow { font-size: 12px; padding: 5px 12px; }
-    .scoreboard { gap: 16px; }
-    .scoreboard .num { font-size: 36px; }
-    .scoreboard .lbl { font-size: 12px; }
-    .progress .cap { font-size: 12px; margin-top: 5px; }
-    .itl-card { padding: 12px 14px; }
-    .itl-card .vs { margin: 9px 0 2px; }
-    .itl-card .vs .p { font-size: 22px; }
-    .itl-card .alloc { font-size: 13px; margin-bottom: 9px; }
-    .itl-card .meta { font-size: 13px; }
-    .serve-static { font-size: 15px; }
-    .serve-pick .svc button { height: 40px; font-size: 14px; }
-    .serve-cap { font-size: 12px; margin-top: 6px; }
-    .itl > .itl-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 40% 1fr; gap: 12px; }
-    .itl .itl-primary { order: 1; height: 44px; font-size: 16px; }
-    .itl .itl-ghost { height: 44px; font-size: 14px; }
-    .overlay .trophy { font-size: 40px; }
-    .overlay .win-team { font-size: 26px; }
+    .eyebrow { font-size: 14px; padding: 6px 13px; }
+    .scoreboard { gap: 18px; }
+    .scoreboard .num { font-size: 42px; }
+    .scoreboard .lbl { font-size: 15px; }
+    .progress .cap { font-size: 14px; margin-top: 6px; }
+    .itl-card { padding: 13px 15px; }
+    .itl-card .vs { margin: 10px 0 3px; }
+    .itl-card .vs .p { font-size: 26px; }
+    .itl-card .alloc { font-size: 15px; margin-bottom: 10px; }
+    .itl-card .meta { font-size: 15px; }
+    .serve-static { font-size: 17px; }
+    .serve-pick .svc button { height: 46px; font-size: 16px; }
+    .itl > .itl-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 40% 1fr; gap: 14px; }
+    .itl .itl-primary { order: 1; height: 50px; font-size: 18px; }
+    .itl .itl-ghost { height: 50px; font-size: 16px; }
+    .overlay .trophy { font-size: 46px; }
+    .overlay .win-team { font-size: 32px; }
   }
 </style>
 </head>
@@ -487,8 +485,7 @@ function interstitial() {
             <button class="${srv === L ? `on ${cls(L)}` : ''}" onclick="S.server=${L};render()">${srv === L ? BALL(14) : ''}${esc(pL)}</button>
             <button class="${srv === R ? `on ${cls(R)}` : ''}" onclick="S.server=${R};render()">${srv === R ? BALL(14) : ''}${esc(pR)}</button>
           </div>
-        </div>
-        <div class="serve-cap">tap a name to choose the opening server</div>` : `
+        </div>` : `
         <div class="serve-static">${BALL(15)}<span><b class="${cls(srv)}">${esc(S.teams[srv].players[seed])}</b> serves first <span class="why">· won the last rally</span></span></div>`;
 
   return `
