@@ -70,13 +70,15 @@
   }
   .topbar .round-line { font-size: 18px; font-weight: 700; }
   .topbar .rally-line { font-size: 15px; color: var(--muted); margin-top: 3px; }
-  .zones { flex: 1; display: flex; min-height: 0; }
+  .zones { flex: 1; display: flex; min-height: 0; position: relative; }
   .zone {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
     cursor: pointer; position: relative; gap: 6px; padding: 12px;
   }
-  .zone.a { background: linear-gradient(180deg, #12312e, #0e2522); padding-left: max(12px, env(safe-area-inset-left)); }
-  .zone.b { background: linear-gradient(180deg, #33290f, #241d0b); padding-right: max(12px, env(safe-area-inset-right)); }
+  .zone.a { background: linear-gradient(180deg, #12312e, #0e2522); }
+  .zone.b { background: linear-gradient(180deg, #33290f, #241d0b); }
+  .zones .zone:first-of-type { padding-left: max(12px, env(safe-area-inset-left)); }
+  .zones .zone:last-of-type { padding-right: max(12px, env(safe-area-inset-right)); }
   .zone:active.a { background: #174540; }
   .zone:active.b { background: #453913; }
   .zone .tname { font-size: 19px; font-weight: 700; letter-spacing: 0.3px; }
@@ -85,6 +87,7 @@
   .serve-pill {
     font-size: 13px; font-weight: 700; letter-spacing: 1.5px; padding: 5px 14px;
     border-radius: 999px; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 6px;
   }
   .serve-pill.hidden { visibility: hidden; }
   .zone.a .serve-pill { background: var(--teamA); color: #06231f; }
@@ -92,6 +95,13 @@
   .zone .score { font-size: clamp(72px, 24vw, 160px); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
   .zone .pname { font-size: 17px; color: var(--muted); }
   .zone .hint { position: absolute; bottom: 12px; font-size: 13px; color: var(--muted); opacity: 0.8; padding: 0 8px; text-align: center; }
+  .swap-btn {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33465b;
+    background: var(--panel); color: var(--muted); font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .swap-btn:active { background: var(--panel-2); color: var(--text); }
   .bottombar {
     display: flex; gap: 10px;
     padding: 10px max(12px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
@@ -108,38 +118,82 @@
   .overlay {
     position: fixed; inset: 0; background: rgba(8, 13, 19, 0.92); z-index: 10;
     display: flex; flex-direction: column; align-items: center;
-    padding: 24px; text-align: center; backdrop-filter: blur(4px);
+    padding: 20px; text-align: center; backdrop-filter: blur(4px);
     overflow-y: auto;
   }
   /* center when content fits, scroll from the top when it doesn't */
   .overlay::before, .overlay::after { content: ''; margin: auto; }
   .overlay > * { flex-shrink: 0; }
-  .overlay .headline { font-size: 25px; font-weight: 800; margin-bottom: 16px; }
-  .overlay .matchup-card {
-    background: var(--panel); border-radius: 16px; padding: 20px 26px; margin-bottom: 8px; min-width: 260px;
+  .ball { vertical-align: -2px; flex-shrink: 0; }
+  .itl { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 380px; }
+  .itl-status { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 7px; max-width: 100%;
+    background: rgba(238, 244, 248, 0.05); border: 1px solid rgba(238, 244, 248, 0.12);
+    border-radius: 16px; padding: 6px 14px; color: #a9bccb;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
   }
-  .overlay .matchup-card .seed-tag { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-  .overlay .matchup-card .vs { font-size: 25px; font-weight: 700; line-height: 1.7; }
-  .overlay .matchup-card .vs .a { color: var(--teamA); }
-  .overlay .matchup-card .vs .b { color: var(--teamB); }
-  .overlay .matchup-card .vs .v { color: var(--muted); font-size: 16px; margin: 0 10px; }
-  .overlay .matchup-card .alloc { font-size: 15px; color: var(--muted); margin-top: 10px; }
-  .overlay .scoreline { font-size: 17px; color: var(--muted); margin-bottom: 12px; }
+  .eyebrow.gold { background: rgba(244, 183, 64, 0.1); border-color: rgba(244, 183, 64, 0.3); color: var(--teamB); }
+  .scoreboard { display: flex; align-items: center; justify-content: center; gap: 20px; }
+  .scoreboard .lbl { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .scoreboard .lbl.a { color: var(--teamA); }
+  .scoreboard .lbl.b { color: var(--teamB); }
+  .scoreboard .num { font-size: 48px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .scoreboard .trail .num { color: rgba(238, 244, 248, 0.65); }
+  .scoreboard .dash { font-size: 20px; color: var(--muted); }
+  .progress { width: 76%; max-width: 260px; }
+  .progress .segs { display: flex; gap: 3px; }
+  .progress .seg { flex: 1; height: 4px; border-radius: 2px; background: #1d2b3a; }
+  .progress .seg.done { background: #93a7b8; }
+  .progress .seg.next { background: rgba(238, 244, 248, 0.38); }
+  .progress .cap { font-size: 13px; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .itl-card { background: var(--panel); border: 1px solid rgba(51, 70, 91, 0.55); border-radius: 16px; padding: 16px; }
+  .itl-card .chiprow { display: flex; align-items: center; justify-content: space-between; }
+  .itl-card .chip {
+    background: var(--panel-2); border-radius: 999px; padding: 4px 10px; color: #c7d5e0;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .itl-card .chip.gold { background: rgba(244, 183, 64, 0.14); color: var(--teamB); }
+  .itl-card .meta { font-size: 14px; color: var(--muted); }
+  .itl-card .vs { margin: 14px 0 4px; }
+  .itl-card .vs .p { font-size: 26px; font-weight: 800; }
+  .itl-card .vs .p.a { color: var(--teamA); }
+  .itl-card .vs .p.b { color: var(--teamB); }
+  .itl-card .vs .v { font-size: 14px; color: var(--muted); margin: 0 10px; }
+  .itl-card .alloc { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+  .serve-static { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 16px; }
+  .serve-static b.a { color: var(--teamA); }
+  .serve-static b.b { color: var(--teamB); }
+  .serve-static .why { color: var(--muted); }
+  .serve-pick { display: flex; align-items: center; gap: 10px; }
+  .serve-pick .lbl { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .serve-pick .svc { flex: 1; display: flex; gap: 3px; background: #16202c; border: 1px solid #33465b; border-radius: 12px; padding: 3px; }
+  .serve-pick .svc button {
+    flex: 1; height: 44px; border: none; border-radius: 9px; background: none; cursor: pointer;
+    font-size: 15px; font-weight: 600; color: var(--muted);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .serve-pick .svc button.on { font-weight: 700; }
+  .serve-pick .svc button.on.a { background: rgba(15, 185, 166, 0.16); color: var(--teamA); }
+  .serve-pick .svc button.on.b { background: rgba(244, 183, 64, 0.16); color: var(--teamB); }
+  .serve-cap { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .itl-actions { display: flex; flex-direction: column; gap: 10px; }
+  .itl-primary {
+    order: -1; width: 100%; height: 50px; font-size: 17px; font-weight: 700;
+    border: none; border-radius: 12px; background: var(--teamA); color: #06231f; cursor: pointer;
+  }
+  .itl-secondary { display: flex; gap: 10px; }
+  .itl-ghost {
+    flex: 1; height: 44px; font-size: 15px; font-weight: 600; cursor: pointer;
+    background: none; border: 1px solid rgba(238, 244, 248, 0.28); border-radius: 10px; color: #cbd8e4;
+  }
+  .itl-ghost:disabled { opacity: 0.35; cursor: default; }
+  .win { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; max-width: 340px; }
+  .win .itl-actions { width: 100%; margin-top: 10px; }
+  .overlay .scoreline { font-size: 17px; color: var(--muted); }
   .overlay .scoreline b { color: var(--text); font-size: 21px; }
-  .overlay .serve-line {
-    font-size: 16px; color: var(--muted); margin-bottom: 20px; cursor: pointer;
-    padding: 8px 14px; border-radius: 999px; background: var(--panel);
-  }
-  .overlay .serve-line b.a { color: var(--teamA); }
-  .overlay .serve-line b.b { color: var(--teamB); }
-  .overlay .serve-line .swap { font-size: 13px; opacity: 0.65; display: block; margin-top: 3px; }
-  .overlay .big-btn {
-    padding: 17px 48px; font-size: 20px; font-weight: 700; border: none; border-radius: 12px;
-    background: var(--teamA); color: #06231f; cursor: pointer; margin-bottom: 12px;
-  }
-  .overlay .link-btn { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 10px; }
-  .overlay .trophy { font-size: 60px; margin-bottom: 10px; }
-  .overlay .win-team { font-size: 34px; font-weight: 800; margin-bottom: 6px; }
+  .overlay .trophy { font-size: 60px; }
+  .overlay .win-team { font-size: 34px; font-weight: 800; }
 
   /* ---------- Short viewports (phones in landscape) ---------- */
   @media (max-height: 480px) {
@@ -155,18 +209,26 @@
     .zone .hint { position: static; font-size: 13px; }
     .bottombar { gap: 8px; padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
     .bottombar button { padding: 9px; font-size: 15px; }
-    .overlay { padding: 12px 24px; }
-    .overlay .headline { font-size: 19px; margin-bottom: 10px; }
-    .overlay .matchup-card { padding: 12px 20px; min-width: 240px; }
-    .overlay .matchup-card .seed-tag { font-size: 12px; margin-bottom: 6px; }
-    .overlay .matchup-card .vs { font-size: 20px; line-height: 1.5; }
-    .overlay .matchup-card .alloc { font-size: 13px; margin-top: 6px; }
-    .overlay .scoreline { font-size: 15px; margin-bottom: 8px; }
-    .overlay .scoreline b { font-size: 18px; }
-    .overlay .serve-line { font-size: 14px; padding: 6px 12px; margin-bottom: 12px; }
-    .overlay .big-btn { padding: 12px 40px; font-size: 18px; margin-bottom: 8px; }
-    .overlay .link-btn { font-size: 14px; padding: 6px; }
-    .overlay .trophy { font-size: 40px; margin-bottom: 6px; }
+    .overlay { padding: 12px 20px; }
+    .itl { display: grid; grid-template-columns: 40% 1fr; gap: 12px; max-width: 640px; align-items: center; }
+    .itl-status { gap: 10px; }
+    .eyebrow { font-size: 12px; padding: 5px 12px; }
+    .scoreboard { gap: 16px; }
+    .scoreboard .num { font-size: 36px; }
+    .scoreboard .lbl { font-size: 12px; }
+    .progress .cap { font-size: 12px; margin-top: 5px; }
+    .itl-card { padding: 12px 14px; }
+    .itl-card .vs { margin: 9px 0 2px; }
+    .itl-card .vs .p { font-size: 22px; }
+    .itl-card .alloc { font-size: 13px; margin-bottom: 9px; }
+    .itl-card .meta { font-size: 13px; }
+    .serve-static { font-size: 15px; }
+    .serve-pick .svc button { height: 40px; font-size: 14px; }
+    .serve-cap { font-size: 12px; margin-top: 6px; }
+    .itl > .itl-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 40% 1fr; gap: 12px; }
+    .itl .itl-primary { order: 1; height: 44px; font-size: 16px; }
+    .itl .itl-ghost { height: 44px; font-size: 14px; }
+    .overlay .trophy { font-size: 40px; }
     .overlay .win-team { font-size: 26px; }
   }
 </style>
@@ -193,6 +255,7 @@ function freshState(teams) {
     matchup: 0,              // seed index 0..3
     rallies: 0,              // rallies played in current matchup
     server: 0,               // team serving next rally (winner of last rally)
+    swapped: false,          // true = team B on the left side of the screen
     overtime: false,         // golden point at 36-36 after all rounds
     note: 'Game on!',
     hist: []
@@ -207,6 +270,7 @@ function load() {
       const st = JSON.parse(raw);
       if (st.server === undefined) st.server = 0;      // migrate pre-serve-tracking saves
       if (st.overtime === undefined) st.overtime = false;
+      if (st.swapped === undefined) st.swapped = false;
       return st;
     }
   } catch (e) {}
@@ -280,7 +344,7 @@ function advanceMatchup() {
     S.overtime = true;
     S.round = ROUND_RALLIES.length - 1;
     S.matchup = SEEDS - 1;
-    S.note = 'All square — Golden Point!';
+    S.note = 'All square!';
   } else if (S.matchup === 0) {
     S.note = `Seed ${finishedSeed} matchup complete — that wraps Round ${S.round}!`;
   } else {
@@ -299,6 +363,12 @@ function startGameFromSetup() {
 }
 function val(id) { return (document.getElementById(id)?.value || '').trim(); }
 
+/* Display preference only — deliberately not snapshotted, so undo never flips sides. */
+function swapSides() {
+  S.swapped = !S.swapped;
+  render();
+}
+
 function restart(keepTeams) {
   if (!confirm(keepTeams ? 'Restart the game with the same teams?' : 'Start over with new teams?')) return;
   S = keepTeams ? freshState(S.teams) : { phase: 'setup', teams: S.teams };
@@ -308,6 +378,7 @@ function restart(keepTeams) {
 /* ===== Rendering ===== */
 const app = document.getElementById('app');
 const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const BALL = s => `<svg class="ball" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#cbdc46"/><g fill="#7c8f1f"><circle cx="12" cy="7" r="1.7"/><circle cx="8" cy="11.5" r="1.7"/><circle cx="16" cy="11.5" r="1.7"/><circle cx="10" cy="16" r="1.7"/><circle cx="14.5" cy="16" r="1.7"/></g></svg>`;
 
 function render() {
   save();
@@ -343,11 +414,23 @@ function renderSetup() {
     </div>`;
 }
 
+function sideOrder() { return S.swapped ? [1, 0] : [0, 1]; }
+
+function zoneHTML(t) {
+  const p = S.teams[t].players[S.matchup];
+  return `
+      <div class="zone ${t === 0 ? 'a' : 'b'}" onpointerdown="point(${t})">
+        <div class="tname">${esc(S.teams[t].name)}</div>
+        <div class="serve-pill ${S.server === t ? '' : 'hidden'}">${BALL(14)} Serving</div>
+        <div class="score">${S.scores[t]}</div>
+        <div class="pname">${esc(p)} on court</div>
+        <div class="hint">tap when ${esc(p)} wins the rally</div>
+      </div>`;
+}
+
 function renderGame() {
-  const [a, b] = S.scores;
   const seed = S.matchup;
-  const pA = S.teams[0].players[seed];
-  const pB = S.teams[1].players[seed];
+  const [L, R] = sideOrder();
   const alloc = ROUND_RALLIES[S.round];
   const roundLabel = S.overtime ? 'Golden Point' : `Round ${S.round + 1} of 3`;
   const rallyLabel = S.overtime
@@ -360,20 +443,9 @@ function renderGame() {
       <div class="rally-line">${rallyLabel}</div>
     </div>
     <div class="zones">
-      <div class="zone a" onpointerdown="point(0)">
-        <div class="tname">${esc(S.teams[0].name)}</div>
-        <div class="serve-pill ${S.server === 0 ? '' : 'hidden'}">🥎 Serving</div>
-        <div class="score">${a}</div>
-        <div class="pname">${esc(pA)} on court</div>
-        <div class="hint">tap when ${esc(pA)} wins the rally</div>
-      </div>
-      <div class="zone b" onpointerdown="point(1)">
-        <div class="tname">${esc(S.teams[1].name)}</div>
-        <div class="serve-pill ${S.server === 1 ? '' : 'hidden'}">🥎 Serving</div>
-        <div class="score">${b}</div>
-        <div class="pname">${esc(pB)} on court</div>
-        <div class="hint">tap when ${esc(pB)} wins the rally</div>
-      </div>
+      ${zoneHTML(L)}
+      ${zoneHTML(R)}
+      <button class="swap-btn" onclick="swapSides()" title="Swap sides" aria-label="Swap sides">⇄</button>
     </div>
     <div class="bottombar">
       <button onclick="undo()" ${S.hist.length ? '' : 'disabled'}>↩︎ Undo</button>
@@ -386,45 +458,84 @@ function renderGame() {
 
 function interstitial() {
   const seed = S.matchup;
-  const pA = S.teams[0].players[seed];
-  const pB = S.teams[1].players[seed];
+  const [L, R] = sideOrder();
+  const pL = S.teams[L].players[seed];
+  const pR = S.teams[R].players[seed];
+  const cls = t => t === 0 ? 'a' : 'b';
   const alloc = ROUND_RALLIES[S.round];
+  const done = S.round * SEEDS + S.matchup;
+  const total = ROUND_RALLIES.length * SEEDS;
+  const atStart = S.scores[0] + S.scores[1] === 0;
+  const srv = S.server;
+
+  const side = t => `
+        <div class="${S.scores[t] < S.scores[1 - t] ? 'trail' : ''}">
+          <div class="lbl ${cls(t)}">${esc(S.teams[t].name)}</div>
+          <div class="num">${S.scores[t]}</div>
+        </div>`;
+  const progress = S.overtime ? '' : `
+        <div class="progress">
+          <div class="segs">${Array.from({ length: total }, (_, i) =>
+            `<div class="seg ${i < done ? 'done' : i === done ? 'next' : ''}"></div>`).join('')}</div>
+          <div class="cap">Matchup ${done + 1} of ${total}</div>
+        </div>`;
+  // Serve is only a choice before the game's first rally; afterwards the rally winner serves.
+  const serveArea = atStart ? `
+        <div class="serve-pick">
+          <span class="lbl">First serve</span>
+          <div class="svc">
+            <button class="${srv === L ? `on ${cls(L)}` : ''}" onclick="S.server=${L};render()">${srv === L ? BALL(14) : ''}${esc(pL)}</button>
+            <button class="${srv === R ? `on ${cls(R)}` : ''}" onclick="S.server=${R};render()">${srv === R ? BALL(14) : ''}${esc(pR)}</button>
+          </div>
+        </div>
+        <div class="serve-cap">tap a name to choose the opening server</div>` : `
+        <div class="serve-static">${BALL(15)}<span><b class="${cls(srv)}">${esc(S.teams[srv].players[seed])}</b> serves first <span class="why">· won the last rally</span></span></div>`;
+
   return `
     <div class="overlay">
-      <div class="headline">${esc(S.note)}</div>
-      <div class="matchup-card">
-        <div class="seed-tag">${S.overtime ? 'Golden Point' : `Round ${S.round + 1}`} · Seed ${seed + 1} up next</div>
-        <div class="vs"><span class="a">${esc(pA)}</span><span class="v">vs</span><span class="b">${esc(pB)}</span></div>
-        <div class="alloc">${S.overtime ? 'Sudden death — one rally decides the game' : `${alloc} rallies this round`}</div>
+      <div class="itl">
+        <div class="itl-status">
+          <div class="eyebrow${S.overtime ? ' gold' : ''}">${S.overtime ? '⚡' : atStart ? BALL(13) : '✓'} ${esc(S.note)}</div>
+          <div class="scoreboard">${side(L)}<div class="dash">—</div>${side(R)}</div>
+          ${progress}
+        </div>
+        <div class="itl-card">
+          <div class="chiprow">
+            <span class="chip${S.overtime ? ' gold' : ''}">${S.overtime ? 'Golden point' : 'Up next'}</span>
+            <span class="meta">${S.overtime ? `Seed ${seed + 1}` : `Round ${S.round + 1} · Seed ${seed + 1}`}</span>
+          </div>
+          <div class="vs"><span class="p ${cls(L)}">${esc(pL)}</span><span class="v">vs</span><span class="p ${cls(R)}">${esc(pR)}</span></div>
+          <div class="alloc">${S.overtime ? 'Sudden death — one rally wins it all' : `${alloc} rallies this matchup`}</div>
+          ${serveArea}
+        </div>
+        <div class="itl-actions">
+          <div class="itl-secondary">
+            <button class="itl-ghost" onclick="swapSides()">⇄ Swap sides</button>
+            <button class="itl-ghost" onclick="undo()" ${S.hist.length ? '' : 'disabled'}>↩︎ Undo rally</button>
+          </div>
+          <button class="itl-primary" onclick="S.phase='play';render()">${S.overtime ? 'Play golden point' : 'Start Rallies'}</button>
+        </div>
       </div>
-      <div class="scoreline">${esc(S.teams[0].name)} <b>${S.scores[0]}</b> — <b>${S.scores[1]}</b> ${esc(S.teams[1].name)}</div>
-      ${serveLine()}
-      <button class="big-btn" onclick="S.phase='play';render()">Start Rallies</button>
-      ${S.hist.length ? '<button class="link-btn" onclick="undo()">↩︎ Undo last rally</button>' : ''}
-    </div>`;
-}
-
-function serveLine() {
-  const srv = S.server;
-  const player = S.teams[srv].players[S.matchup];
-  const started = S.scores[0] + S.scores[1] > 0;
-  const why = started ? 'won the last rally' : 'first serve';
-  return `
-    <div class="serve-line" onclick="S.server=1-S.server;render()">
-      🥎 <b class="${srv === 0 ? 'a' : 'b'}">${esc(player)}</b> serves (${why})<span class="swap">tap to swap</span>
     </div>`;
 }
 
 function winnerOverlay() {
   const w = hasWinner();
+  const [L, R] = sideOrder();
   return `
     <div class="overlay">
-      <div class="trophy">🏆</div>
-      <div class="win-team" style="color:${w === 0 ? 'var(--teamA)' : 'var(--teamB)'}">${esc(S.teams[w].name)} wins!</div>
-      <div class="scoreline"><b>${S.scores[0]}</b> — <b>${S.scores[1]}</b></div>
-      <button class="big-btn" onclick="restart(true)">Rematch</button>
-      <button class="link-btn" onclick="restart(false)">New Teams</button>
-      <button class="link-btn" onclick="undo()">↩︎ Undo last rally</button>
+      <div class="win">
+        <div class="trophy">🏆</div>
+        <div class="win-team" style="color:${w === 0 ? 'var(--teamA)' : 'var(--teamB)'}">${esc(S.teams[w].name)} wins!</div>
+        <div class="scoreline"><b>${S.scores[L]}</b> — <b>${S.scores[R]}</b></div>
+        <div class="itl-actions">
+          <div class="itl-secondary">
+            <button class="itl-ghost" onclick="restart(false)">New Teams</button>
+            <button class="itl-ghost" onclick="undo()">↩︎ Undo rally</button>
+          </div>
+          <button class="itl-primary" onclick="restart(true)">Rematch</button>
+        </div>
+      </div>
     </div>`;
 }
 
