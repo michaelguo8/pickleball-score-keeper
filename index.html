@@ -65,9 +65,19 @@
 
   /* ---------- Game screen ---------- */
   .topbar {
-    padding: calc(8px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px;
+    padding: calc(8px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 8px max(10px, env(safe-area-inset-left));
     text-align: center; background: var(--panel);
   }
+  .tb-side { display: flex; gap: 7px; justify-self: start; }
+  .tb-side.right { justify-self: end; }
+  .tb-btn {
+    width: 44px; height: 44px; border: none; border-radius: 10px; cursor: pointer;
+    background: var(--panel-2); color: var(--text); font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tb-btn:disabled { opacity: 0.35; cursor: default; }
+  .tb-center { min-width: 0; }
   .topbar .round-line { font-size: 22px; font-weight: 700; }
   .topbar .rally-line { font-size: 17px; color: var(--muted); margin-top: 4px; }
   .zones { flex: 1; display: flex; min-height: 0; position: relative; }
@@ -94,25 +104,22 @@
   .zone.b .serve-pill { background: var(--teamB); color: #2b1f04; }
   .zone .score { font-size: clamp(72px, 24vw, 160px); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
   .zone .pname { font-size: 20px; color: var(--muted); }
-  .zone .hint { position: absolute; bottom: 12px; font-size: 16px; color: var(--muted); opacity: 0.8; padding: 0 8px; text-align: center; }
-  .swap-btn {
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33465b;
-    background: var(--panel); color: var(--muted); font-size: 20px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
+  .zone .hint { position: absolute; bottom: calc(12px + env(safe-area-inset-bottom)); font-size: 16px; color: var(--muted); opacity: 0.8; padding: 0 8px; text-align: center; }
+  .menu-backdrop { position: fixed; inset: 0; z-index: 19; }
+  .menu {
+    position: fixed; z-index: 20;
+    top: calc(64px + env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right));
+    background: var(--panel); border: 1px solid #33465b; border-radius: 12px; padding: 6px;
+    display: flex; flex-direction: column; min-width: 190px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   }
-  .swap-btn:active { background: var(--panel-2); color: var(--text); }
-  .bottombar {
-    display: flex; gap: 10px;
-    padding: 10px max(12px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-    background: var(--panel);
+  .menu button {
+    text-align: left; padding: 14px 16px; font-size: 18px; font-weight: 600;
+    background: none; border: none; border-radius: 8px; color: var(--text); cursor: pointer;
   }
-  .bottombar button {
-    flex: 1; padding: 15px 8px; font-size: 19px; font-weight: 600; border: none; border-radius: 10px;
-    background: var(--panel-2); color: var(--text); cursor: pointer; white-space: nowrap;
-  }
-  .bottombar button:disabled { opacity: 0.35; cursor: default; }
-  .bottombar button.danger { color: var(--danger); }
+  .menu button:active { background: var(--panel-2); }
+  .menu button.danger { color: var(--danger); }
+  .menu-sep { height: 1px; background: #33465b; margin: 5px 8px; }
 
   /* ---------- Overlay (interstitial / winner) ---------- */
   .overlay {
@@ -194,6 +201,56 @@
   .overlay .trophy { font-size: 66px; }
   .overlay .win-team { font-size: 40px; font-weight: 800; }
 
+  /* ---------- Format picker (setup) ---------- */
+  .fmt-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 560px; margin: 0 auto 18px; }
+  @media (max-width: 420px) { .fmt-picker { grid-template-columns: 1fr; } }
+  .fmt-opt {
+    display: flex; flex-direction: column; gap: 3px; text-align: left; cursor: pointer;
+    background: var(--panel); border: 1.5px solid #33465b; border-radius: 12px; padding: 14px 16px; color: var(--text);
+  }
+  .fmt-opt.on { border-color: var(--teamA); background: rgba(15, 185, 166, 0.1); }
+  .fmt-opt .fmt-name { font-size: 18px; font-weight: 700; }
+  .fmt-opt.on .fmt-name { color: var(--teamA); }
+  .fmt-opt .fmt-blurb { font-size: 14px; color: var(--muted); line-height: 1.3; }
+  .team-size { font-size: 13px; color: var(--teamB); font-weight: 600; letter-spacing: 0.3px; margin-top: 8px; }
+
+  /* ---------- 3v4: rolling substitutions ---------- */
+  .zone .subline {
+    font-size: 15px; font-weight: 700; color: var(--text); margin-top: 4px;
+    background: rgba(238, 244, 248, 0.12); border: 1px solid rgba(238, 244, 248, 0.2);
+    border-radius: 999px; padding: 3px 13px;
+  }
+  .zone .subline.ghost { visibility: hidden; }
+  .zone .sub-panel {
+    position: absolute; inset: 0; z-index: 6; cursor: default;
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+    background: rgba(8, 13, 19, 0.72); backdrop-filter: blur(3px);
+  }
+  .sub-card {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    background: var(--panel); border: 1px solid rgba(244, 183, 64, 0.45);
+    border-radius: 18px; padding: 24px 20px; width: 100%; max-width: 310px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+    animation: subpop 0.25s ease;
+  }
+  @keyframes subpop { from { opacity: 0; transform: scale(0.92); } }
+  .sub-card .sub-icon { font-size: 38px; }
+  .sub-card .sub-who { font-size: 25px; font-weight: 800; color: var(--teamB); }
+  .sub-card .sub-for { font-size: 17px; color: var(--muted); }
+  .sub-card .sub-go {
+    margin-top: 14px; width: 100%; height: 54px; border: none; border-radius: 12px;
+    background: var(--teamB); color: #2b1f04; font-size: 20px; font-weight: 700; cursor: pointer;
+  }
+  .itl-card .subplan {
+    display: flex; flex-direction: column; gap: 6px; margin: 0 0 14px;
+    padding: 11px 13px; background: var(--panel-2); border-radius: 11px;
+  }
+  .subplan .sp-lbl { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .subplan .sp-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; font-size: 15px; }
+  .subplan .sp-seg b { color: var(--teamB); font-weight: 700; }
+  .subplan .sp-pts { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .subplan .sp-arrow { color: var(--muted); }
+
   /* ---------- Short viewports (phones in landscape) ---------- */
   @media (max-height: 480px) {
     .topbar { padding-top: calc(4px + env(safe-area-inset-top)); padding-bottom: 4px; }
@@ -206,8 +263,8 @@
     .zone .score { font-size: clamp(44px, 32vh, 140px); }
     .zone .pname { display: none; }
     .zone .hint { position: static; font-size: 15px; }
-    .bottombar { gap: 8px; padding-top: 6px; padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
-    .bottombar button { padding: 10px; font-size: 17px; }
+    .tb-btn { width: 38px; height: 38px; font-size: 18px; border-radius: 9px; }
+    .menu { top: calc(50px + env(safe-area-inset-top)); }
     .overlay { padding: 12px 20px; }
     .itl { display: grid; grid-template-columns: 40% 1fr; gap: 14px; max-width: 660px; align-items: center; }
     .itl-status { gap: 10px; }
@@ -228,35 +285,53 @@
     .itl .itl-ghost { height: 50px; font-size: 16px; }
     .overlay .trophy { font-size: 46px; }
     .overlay .win-team { font-size: 32px; }
+    /* 3v4: keep the on-court / sub info visible even though it's tight */
+    .zones.has-subs .zone .pname { display: block; font-size: 14px; }
+    .zones.has-subs .zone .subline { font-size: 13px; padding: 2px 11px; margin-top: 3px; }
+    .zone .sub-panel { padding: 10px; }
+    .sub-card { padding: 12px 14px; gap: 4px; max-width: 270px; }
+    .sub-card .sub-icon { font-size: 24px; }
+    .sub-card .sub-who { font-size: 19px; }
+    .sub-card .sub-for { font-size: 14px; }
+    .sub-card .sub-go { margin-top: 7px; height: 44px; font-size: 17px; }
+    .itl-card .subplan { margin-bottom: 10px; padding: 8px 11px; gap: 4px; }
+    .subplan .sp-flow { font-size: 13px; gap: 6px; }
+    .fmt-picker { grid-template-columns: 1fr 1fr; margin-bottom: 12px; }
+    .fmt-opt { padding: 10px 13px; }
   }
 </style>
 </head>
 <body>
 <div id="app"></div>
+<script src="./formats.js"></script>
 <script>
 'use strict';
 
 /* ===== Rules ===== */
-const ROUND_RALLIES = [8, 6, 4];   // rallies per matchup in rounds 1-3
-const TARGET = 33;                  // points to win
-const WIN_BY = 2;                   // 36-36 after all rounds -> golden point
-const SEEDS = 4;
+// Per-format rules live in formats.js (window.PBFormats); the active game reads
+// them through fmt(). STORE_KEY is shared — a saved game records its own format.
+const F = window.PBFormats;
+const DEFAULT_FORMAT = '4v4';
 const STORE_KEY = 'pb-4v4-state-v1';
+function fmt() { return F.FORMATS[S.format] || F.FORMATS[DEFAULT_FORMAT]; }
 
 /* ===== State ===== */
-function freshState(teams) {
+function freshState(teams, format) {
   return {
     phase: 'between',        // 'setup' | 'between' | 'play' | 'done'
-    teams,                   // [{name, players:[4]}, {name, players:[4]}]
+    format,                  // key into PBFormats.FORMATS
+    teams,                   // [{name, players:[...]}, {name, players:[...]}]
     scores: [0, 0],
-    round: 0,                // 0..2
-    matchup: 0,              // seed index 0..3
-    rallies: 0,              // rallies played in current matchup
+    round: 0,                // 0-indexed round
+    matchup: 0,              // 0-indexed lane / seed within the round
+    rallies: 0,              // points played in the current lane
     server: 0,               // team serving next rally (winner of last rally)
+    pendingSub: false,       // play paused for a rolling sub until the user confirms
     swapped: false,          // true = team B on the left side of the screen
     overtime: false,         // golden point at 36-36 after all rounds
     note: 'Game on!',
-    hist: []
+    hist: [],                // undo stack (past states)
+    future: []               // redo stack (states undone from)
   };
 }
 let S = load();
@@ -269,10 +344,13 @@ function load() {
       if (st.server === undefined) st.server = 0;      // migrate pre-serve-tracking saves
       if (st.overtime === undefined) st.overtime = false;
       if (st.swapped === undefined) st.swapped = false;
+      if (st.format === undefined) st.format = DEFAULT_FORMAT; // pre-format saves are 4v4
+      if (st.future === undefined) st.future = [];             // pre-redo saves
+      if (st.pendingSub === undefined) st.pendingSub = false;  // pre-sub-pause saves
       return st;
     }
   } catch (e) {}
-  return { phase: 'setup', teams: defaultTeams() };
+  return setupState();
 }
 function save() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {}
@@ -283,34 +361,48 @@ function defaultTeams() {
     { name: '', players: ['', '', '', ''] }
   ];
 }
+function setupState(teams, format) {
+  return { phase: 'setup', teams: teams || defaultTeams(), format: format || DEFAULT_FORMAT };
+}
 
 /* ===== Game logic ===== */
-function snapshot() {
-  S.hist.push(JSON.stringify({
+function stateSnap() {
+  return JSON.stringify({
     phase: S.phase, scores: S.scores, round: S.round, matchup: S.matchup,
-    rallies: S.rallies, server: S.server, overtime: S.overtime, note: S.note
-  }));
+    rallies: S.rallies, server: S.server, overtime: S.overtime, note: S.note,
+    pendingSub: S.pendingSub
+  });
+}
+
+function snapshot() {
+  S.hist.push(stateSnap());
   if (S.hist.length > 300) S.hist.shift();
+  S.future = []; // a newly scored rally invalidates anything undone
 }
 
 function undo() {
   const prev = S.hist.pop();
   if (!prev) return;
+  S.future.push(stateSnap());
   Object.assign(S, JSON.parse(prev));
   render();
 }
 
+function redo() {
+  const next = S.future.pop();
+  if (!next) return;
+  S.hist.push(stateSnap());
+  Object.assign(S, JSON.parse(next));
+  render();
+}
+
 function hasWinner() {
-  const [a, b] = S.scores;
   // Golden point: at 36-36 after all rounds, the next rally wins outright.
-  const winBy = S.overtime ? 1 : WIN_BY;
-  if (a >= TARGET && a - b >= winBy) return 0;
-  if (b >= TARGET && b - a >= winBy) return 1;
-  return null;
+  return F.checkWinner(fmt(), S.scores, S.overtime);
 }
 
 function point(team) {
-  if (S.phase !== 'play') return;
+  if (S.phase !== 'play' || S.pendingSub) return;
   snapshot();
   S.scores[team]++;
   S.rallies++;
@@ -323,43 +415,82 @@ function point(team) {
   }
 
   // Golden point has no rally allocation — a single rally decides it.
-  if (!S.overtime && S.rallies >= ROUND_RALLIES[S.round]) {
+  if (!S.overtime && S.rallies >= fmt().laneLength[S.round]) {
     advanceMatchup();
+  } else {
+    // Pause play if this rally triggers a rolling substitution — the
+    // announcement stays up until the user taps Continue play.
+    const f = fmt();
+    if (f.sub && F.onCourt(f, f.t4, S.round, S.matchup, S.rallies) !==
+                 F.onCourt(f, f.t4, S.round, S.matchup, S.rallies - 1)) {
+      S.pendingSub = true;
+    }
   }
   render();
 }
 
+function confirmSub() {
+  S.pendingSub = false;
+  render();
+}
+
+// The display number of the current matchup: global (1..9) for formats that
+// count across the whole match, per-round (seed) otherwise.
+function unitNum(f) {
+  return f.globalCount ? S.round * f.lanesPerRound + S.matchup + 1 : S.matchup + 1;
+}
+
 function advanceMatchup() {
-  const finishedSeed = S.matchup + 1;
+  const f = fmt();
+  const finished = unitNum(f);
   S.rallies = 0;
   S.matchup++;
-  if (S.matchup >= SEEDS) {
+  if (S.matchup >= f.lanesPerRound) {
     S.matchup = 0;
     S.round++;
   }
-  if (S.round >= ROUND_RALLIES.length) {
-    // All 3 rounds done, 36-36 — seed 4 pair plays a single golden point.
+  if (S.round >= F.rounds(f)) {
+    // All rounds done at 36-36 — the final lane's last pairing plays golden point.
     S.overtime = true;
-    S.round = ROUND_RALLIES.length - 1;
-    S.matchup = SEEDS - 1;
+    S.round = F.rounds(f) - 1;
+    S.matchup = f.lanesPerRound - 1;
+    S.rallies = f.laneLength[S.round]; // continue the final lane into sudden death
     S.note = 'All square!';
-  } else if (S.matchup === 0) {
-    S.note = `Seed ${finishedSeed} matchup complete — that wraps Round ${S.round}!`;
   } else {
-    S.note = `Seed ${finishedSeed} matchup complete!`;
+    const base = `${f.unit} ${finished} ${f.doneWord}`;
+    S.note = S.matchup === 0 ? `${base} — that wraps Round ${S.round}!` : `${base}!`;
   }
   S.phase = 'between';
 }
 
 function startGameFromSetup() {
+  captureSetupInputs();
+  const f = fmt();
   const teams = [0, 1].map(t => ({
-    name: val(`tname${t}`) || (t === 0 ? 'Team A' : 'Team B'),
-    players: [0, 1, 2, 3].map(p => val(`p${t}_${p}`) || `${t === 0 ? 'A' : 'B'}${p + 1}`)
+    name: (S.teams[t].name || '').trim() || (t === 0 ? 'Team A' : 'Team B'),
+    players: Array.from({ length: f.teamSizes[t] }, (_, p) =>
+      (S.teams[t].players[p] || '').trim() || `${t === 0 ? 'A' : 'B'}${p + 1}`)
   }));
-  S = freshState(teams);
+  S = freshState(teams, S.format);
   render();
 }
-function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+// Snapshot whatever's currently typed into S.teams so it survives a re-render
+// (switching format changes how many inputs are shown).
+function captureSetupInputs() {
+  for (let t = 0; t < 2; t++) {
+    const nameEl = document.getElementById(`tname${t}`);
+    if (nameEl) S.teams[t].name = nameEl.value;
+    for (let p = 0; p < 4; p++) {
+      const el = document.getElementById(`p${t}_${p}`);
+      if (el) S.teams[t].players[p] = el.value;
+    }
+  }
+}
+function pickFormat(id) {
+  captureSetupInputs();   // preserve typed names across the layout change
+  S.format = id;
+  render();
+}
 
 /* Display preference only — deliberately not snapshotted, so undo never flips sides. */
 function swapSides() {
@@ -367,9 +498,15 @@ function swapSides() {
   render();
 }
 
+/* Ephemeral UI state — intentionally not persisted or snapshotted. */
+let menuOpen = false;
+function toggleMenu() { menuOpen = !menuOpen; render(); }
+function menuSwap() { menuOpen = false; swapSides(); }   // swapSides() re-renders
+function menuPick(keepTeams) { menuOpen = false; render(); restart(keepTeams); }
+
 function restart(keepTeams) {
   if (!confirm(keepTeams ? 'Restart the game with the same teams?' : 'Start over with new teams?')) return;
-  S = keepTeams ? freshState(S.teams) : { phase: 'setup', teams: S.teams };
+  S = keepTeams ? freshState(S.teams, S.format) : setupState(S.teams, DEFAULT_FORMAT);
   render();
 }
 
@@ -386,85 +523,143 @@ function render() {
 
 function renderSetup() {
   const t = S.teams;
-  const card = (ti, cls, label) => `
+  const f = fmt();
+  const asymmetric = f.teamSizes[0] !== f.teamSizes[1];
+  const picker = Object.values(F.FORMATS).map(ff => `
+        <button class="fmt-opt ${ff.id === S.format ? 'on' : ''}" onclick="pickFormat('${ff.id}')">
+          <span class="fmt-name">${ff.name}</span>
+          <span class="fmt-blurb">${ff.blurb}</span>
+        </button>`).join('');
+  const card = (ti, cls, label) => {
+    const size = f.teamSizes[ti];
+    return `
     <div class="team-card ${cls}">
-      <label>${label} name</label>
-      <input id="tname${ti}" placeholder="${label}" value="${esc(t[ti].name)}" autocomplete="off">
-      ${[0, 1, 2, 3].map(p => `
+      <label>Team name</label>
+      <input id="tname${ti}" placeholder="${label}" value="${esc(t[ti].name || '')}" autocomplete="off">
+      ${asymmetric ? `<div class="team-size">Fields ${size} players</div>` : ''}
+      ${Array.from({ length: size }, (_, p) => `
         <label>Seed ${p + 1}</label>
-        <input id="p${ti}_${p}" placeholder="Player ${p + 1}" value="${esc(t[ti].players[p])}" autocomplete="off">
+        <input id="p${ti}_${p}" placeholder="Player ${p + 1}" value="${esc(t[ti].players[p] || '')}" autocomplete="off">
       `).join('')}
     </div>`;
+  };
   app.innerHTML = `
     <div class="setup">
-      <h1><img src="./icon.svg" class="title-icon" alt=""> 4v4 Team Singles</h1>
-      <div class="sub">Rally scoring · First to ${TARGET}, win by ${WIN_BY}</div>
+      <h1><img src="./icon.svg" class="title-icon" alt=""> Pickleball Scores</h1>
+      <div class="sub">Rally scoring · first to ${f.target}, win by ${f.winBy}</div>
+      <div class="fmt-picker">${picker}</div>
       <div class="team-cards">
         ${card(0, 'a', 'Team A')}
         ${card(1, 'b', 'Team B')}
       </div>
       <button class="start-btn" onclick="startGameFromSetup()">Start Game</button>
-      <div class="rules-note">
-        3 rounds &middot; seeds play their counterparts each round<br>
-        Round 1: 8 rallies per matchup &middot; Round 2: 6 &middot; Round 3: 4<br>
-        Team scores carry over between rounds
-      </div>
+      <div class="rules-note">${f.rules}</div>
     </div>`;
 }
 
 function sideOrder() { return S.swapped ? [1, 0] : [0, 1]; }
 
+// Rolling-sub countdown for the team of 4 (3v4 only): who subs on next and
+// when. '' once the player on court is the last one in this matchup.
+function subLine(f, t) {
+  if (f.id !== '3v4' || t !== f.t4 || S.overtime) return '';
+  const ns = F.nextSub(f, S.round, S.matchup, S.rallies);
+  if (!ns) return '';
+  return `<div class="subline">${esc(S.teams[t].players[ns.seed])} subs ${ns.inPoints === 1 ? 'next point' : `in ${ns.inPoints}`}</div>`;
+}
+
 function zoneHTML(t) {
-  const p = S.teams[t].players[S.matchup];
+  const f = fmt();
+  const p = S.teams[t].players[F.onCourt(f, t, S.round, S.matchup, S.rallies)];
+  const sub = subLine(f, t);
+  // Both columns get the same rows so the team headers line up: when only the
+  // team of 4 has a sub countdown, the other side gets an invisible spacer.
+  const subRow = sub || (subLine(f, 1 - t) ? '<div class="subline ghost">&nbsp;</div>' : '');
+  // Blocking substitution announcement over the subbing team's side. Scoring
+  // is paused (point() ignores taps) until Continue play is tapped.
+  const panel = (S.pendingSub && f.sub && t === f.t4) ? `
+        <div class="sub-panel">
+          <div class="sub-card">
+            <div class="sub-icon">🔁</div>
+            <div class="sub-who">${esc(p)} subs on now</div>
+            <div class="sub-for">taking over from ${esc(S.teams[t].players[F.onCourt(f, t, S.round, S.matchup, S.rallies - 1)])}</div>
+            <button class="sub-go" onclick="confirmSub()">Continue play</button>
+          </div>
+        </div>` : '';
   return `
       <div class="zone ${t === 0 ? 'a' : 'b'}" onpointerdown="point(${t})">
-        <div class="tname">${esc(S.teams[t].name)}</div>
         <div class="serve-pill ${S.server === t ? '' : 'hidden'}">${BALL(14)} Serving</div>
+        <div class="tname">${esc(S.teams[t].name)}</div>
         <div class="score">${S.scores[t]}</div>
         <div class="pname">${esc(p)} on court</div>
+        ${subRow}
         <div class="hint">tap when ${esc(p)} wins the rally</div>
+        ${panel}
       </div>`;
 }
 
 function renderGame() {
+  const f = fmt();
   const seed = S.matchup;
   const [L, R] = sideOrder();
-  const alloc = ROUND_RALLIES[S.round];
-  const roundLabel = S.overtime ? 'Golden Point' : `Round ${S.round + 1} of 3`;
+  const len = f.laneLength[S.round];
+  const is34 = f.id === '3v4';
+  const pt = Math.min(S.rallies + 1, len);
+  const roundLabel = S.overtime ? 'Golden Point' : `Round ${S.round + 1} of ${F.rounds(f)}`;
   const rallyLabel = S.overtime
-    ? `Seed ${seed + 1} matchup · next rally wins it all`
-    : `Seed ${seed + 1} matchup · Rally ${Math.min(S.rallies + 1, alloc)} of ${alloc}`;
-
+    ? (is34 ? `${f.unit} ${unitNum(f)} · next rally wins it all`
+            : `Seed ${seed + 1} matchup · next rally wins it all`)
+    : (is34 ? `${f.unit} ${unitNum(f)} · Point ${pt} of ${len}`
+            : `Seed ${seed + 1} matchup · Rally ${pt} of ${len}`);
   app.innerHTML = `
     <div class="topbar">
-      <div class="round-line">${roundLabel}</div>
-      <div class="rally-line">${rallyLabel}</div>
+      <div class="tb-side">
+        <button class="tb-btn" onclick="undo()" ${S.hist.length ? '' : 'disabled'} title="Undo" aria-label="Undo">↩︎</button>
+        <button class="tb-btn" onclick="redo()" ${S.future.length ? '' : 'disabled'} title="Redo" aria-label="Redo">↪︎</button>
+      </div>
+      <div class="tb-center">
+        <div class="round-line">${roundLabel}</div>
+        <div class="rally-line">${rallyLabel}</div>
+      </div>
+      <div class="tb-side right">
+        <button class="tb-btn" onclick="toggleMenu()" title="More options" aria-label="More options">⋯</button>
+      </div>
     </div>
-    <div class="zones">
+    <div class="zones${is34 ? ' has-subs' : ''}">
       ${zoneHTML(L)}
       ${zoneHTML(R)}
-      <button class="swap-btn" onclick="swapSides()" title="Swap sides" aria-label="Swap sides">⇄</button>
     </div>
-    <div class="bottombar">
-      <button onclick="undo()" ${S.hist.length ? '' : 'disabled'}>↩︎ Undo</button>
-      <button class="danger" onclick="restart(true)">Restart</button>
-      <button onclick="restart(false)">New Teams</button>
-    </div>
+    ${menuOpen ? `
+    <div class="menu-backdrop" onpointerdown="toggleMenu()"></div>
+    <div class="menu">
+      <button onclick="menuSwap()">⇄ Swap sides</button>
+      <div class="menu-sep"></div>
+      <button class="danger" onclick="menuPick(true)">Restart</button>
+      <button onclick="menuPick(false)">New Teams</button>
+    </div>` : ''}
     ${S.phase === 'between' ? interstitial() : ''}
     ${S.phase === 'done' ? winnerOverlay() : ''}`;
 }
 
 function interstitial() {
+  const f = fmt();
   const seed = S.matchup;
   const [L, R] = sideOrder();
-  const pL = S.teams[L].players[seed];
-  const pR = S.teams[R].players[seed];
   const cls = t => t === 0 ? 'a' : 'b';
-  const alloc = ROUND_RALLIES[S.round];
-  const done = S.round * SEEDS + S.matchup;
-  const total = ROUND_RALLIES.length * SEEDS;
+  // The players on court for the upcoming rally (for 3v4 the team of 4 rotates,
+  // so ask the schedule). Between lanes rallies is 0 (the lane's openers); in
+  // the golden point rallies sits at the lane end, so this keeps the pair that
+  // finished regulation rather than resetting to the lane's first server.
+  const lanePlayer = t => S.teams[t].players[F.onCourt(f, t, S.round, seed, S.rallies)];
+  const pL = lanePlayer(L);
+  const pR = lanePlayer(R);
+  const len = f.laneLength[S.round];
+  const lanesPer = f.lanesPerRound;
+  const done = S.round * lanesPer + S.matchup;
+  const total = F.rounds(f) * lanesPer;
   const atStart = S.scores[0] + S.scores[1] === 0;
   const srv = S.server;
+  const is34 = f.id === '3v4';
 
   const side = t => `
         <div class="${S.scores[t] < S.scores[1 - t] ? 'trail' : ''}">
@@ -475,8 +670,18 @@ function interstitial() {
         <div class="progress">
           <div class="segs">${Array.from({ length: total }, (_, i) =>
             `<div class="seg ${i < done ? 'done' : i === done ? 'next' : ''}"></div>`).join('')}</div>
-          <div class="cap">Matchup ${done + 1} of ${total}</div>
+          <div class="cap">${f.progressWord} ${done + 1} of ${total}</div>
         </div>`;
+  // Team-of-4 rotation for the upcoming lane (3v4 only).
+  const plan = (is34 && !S.overtime) ? F.laneSubPlan(f, S.round, seed) : null;
+  const subplan = plan ? `
+          <div class="subplan">
+            <span class="sp-lbl">${esc(S.teams[f.t4].name)} subs</span>
+            <span class="sp-flow">${plan.map(seg => {
+              const range = seg.from === seg.to ? `${seg.from}` : `${seg.from}–${seg.to}`;
+              return `<span class="sp-seg"><b>${esc(S.teams[f.t4].players[seg.seed])}</b> <span class="sp-pts">${range}</span></span>`;
+            }).join('<span class="sp-arrow">→</span>')}</span>
+          </div>` : '';
   // Serve is only a choice before the game's first rally; afterwards the rally winner serves.
   const serveArea = atStart ? `
         <div class="serve-pick">
@@ -486,7 +691,7 @@ function interstitial() {
             <button class="${srv === R ? `on ${cls(R)}` : ''}" onclick="S.server=${R};render()">${srv === R ? BALL(14) : ''}${esc(pR)}</button>
           </div>
         </div>` : `
-        <div class="serve-static">${BALL(15)}<span><b class="${cls(srv)}">${esc(S.teams[srv].players[seed])}</b> serves first <span class="why">· won the last rally</span></span></div>`;
+        <div class="serve-static">${BALL(15)}<span><b class="${cls(srv)}">${esc(lanePlayer(srv))}</b> serves first <span class="why">· won the last rally</span></span></div>`;
 
   return `
     <div class="overlay">
@@ -499,10 +704,11 @@ function interstitial() {
         <div class="itl-card">
           <div class="chiprow">
             <span class="chip${S.overtime ? ' gold' : ''}">${S.overtime ? 'Golden point' : 'Up next'}</span>
-            <span class="meta">${S.overtime ? `Seed ${seed + 1}` : `Round ${S.round + 1} · Seed ${seed + 1}`}</span>
+            <span class="meta">${S.overtime ? `${f.unit} ${unitNum(f)}` : `Round ${S.round + 1} · ${f.unit} ${unitNum(f)}`}</span>
           </div>
           <div class="vs"><span class="p ${cls(L)}">${esc(pL)}</span><span class="v">vs</span><span class="p ${cls(R)}">${esc(pR)}</span></div>
-          <div class="alloc">${S.overtime ? 'Sudden death — one rally wins it all' : `${alloc} rallies this matchup`}</div>
+          <div class="alloc">${S.overtime ? 'Sudden death — one rally wins it all' : (is34 ? `${len} points this matchup` : `${len} rallies this matchup`)}</div>
+          ${subplan}
           ${serveArea}
         </div>
         <div class="itl-actions">
