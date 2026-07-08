@@ -1,0 +1,9 @@
+{
+  "name": "pickleball-score-keeper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Courtside scorekeeper PWA for team pickleball ladders (4v4, 3v3, 3v4).",
+  "scripts": {
+    "test": "node --test"
+  }
+}
