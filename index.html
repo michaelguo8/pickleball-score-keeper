@@ -398,6 +398,7 @@
     background: rgba(244, 183, 64, 0.08); color: #d7e2eb;
     border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: var(--fs-xs); line-height: 1.45;
   }
+  .rules-callout.peer { border-left-color: var(--accent); background: rgba(10, 132, 255, 0.08); }
   @media (max-width: 520px) {
     .rules-head { padding-left: 16px; }
     .rules-title { font-size: var(--fs-lg); }
@@ -689,7 +690,13 @@ function advanceMatchup() {
 }
 
 function startPlay() { S.phase = 'play'; render(); }
-function setServer(t) { S.server = t; render(); }
+function setServer(t) {
+  if (S.server === t) return;
+  S.server = t;
+  suppressInterstitialAnimation = true;
+  try { render(); }
+  finally { suppressInterstitialAnimation = false; }
+}
 
 function startGameFromSetup() {
   captureSetupInputs();
@@ -767,6 +774,7 @@ let dialog = null;   // confirm sheet: { title, body, confirm, danger, action }
 let aboutOpen = false;
 let rulesOpen = false;
 let swapping = false; // a side-swap flip is mid-flight (suppresses the card's mount animation)
+let suppressInterstitialAnimation = false; // server toggle re-renders without replaying the overlay entrance
 let pop = null;      // team index whose score should pop on the next render
 function toggleMenu() { menuOpen = !menuOpen; render(); }
 function menuRedo() { menuOpen = false; redo(); }         // redo() re-renders
@@ -838,7 +846,9 @@ function rulesOverview(f) {
           Seeds rotate to meet a round quota. Unfinished quota carries into the next round.
         </div>
       </div>` : `
-      <div class="rules-peer-rule">Each seed plays the same-numbered seed on the other team for the full matchup.</div>`;
+      <div class="rules-peer-rule">
+        Each seed plays the same-numbered seed on the other team for the full matchup.
+      </div>`;
   return `
     <div class="rules-overview">
       ${matchupRule}
@@ -857,7 +867,7 @@ function peerFormatRules(f) {
           <tr>
             <td>Round ${round + 1}</td>
             <td>Seeds 1–${seeds} play their counterparts</td>
-            <td>${len} rallies each</td>
+            <td>${len} points per matchup</td>
           </tr>`).join('');
   return `
     <h2 class="rules-section-title">Round structure</h2>
@@ -910,7 +920,7 @@ function subFormatRules(f) {
   return `
     <h2 class="rules-section-title">Round structure</h2>
     ${Array.from({ length: F.rounds(f) }, (_, round) => subRoundRules(f, round)).join('')}
-    <div class="rules-callout">Substitutions are announced automatically during play.</div>`;
+    <div class="rules-callout peer">The app shows each upcoming matchup and announces substitutions automatically.</div>`;
 }
 
 function rulesOverlay(f) {
@@ -1173,10 +1183,11 @@ function interstitial() {
   // card just names what's up next (round only — the number lives in the caption).
   const eyebrowIcon = S.overtime ? icons.bolt(15) : atStart ? BALL(13) : icons.check(15);
   const roundMeta = S.overtime ? `${f.unit} ${displayUnitNum(f)}` : `Round ${S.round + 1}`;
+  const staticMount = swapping || suppressInterstitialAnimation;
 
   return `
-    <div class="overlay${swapping ? ' static' : ''}">
-      <div class="itl${swapping ? ' static' : ''}">
+    <div class="overlay${staticMount ? ' static' : ''}">
+      <div class="itl${staticMount ? ' static' : ''}">
         <div class="itl-status">
           <div class="eyebrow${S.overtime ? ' gold' : ''}">${eyebrowIcon} ${esc(S.note)}</div>
           <div class="scoreboard">${side(L)}<div class="dash">—</div>${side(R)}</div>
