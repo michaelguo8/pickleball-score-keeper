@@ -1,6 +1,6 @@
 /* Service worker: network-first for the page and its script (so updates appear
    on next refresh, in sync), cache-first for assets. Falls back to cache offline. */
-const CACHE = 'pb-score-v4';
+const CACHE = 'pb-score-v5';
 const ASSETS = [
   './',
   './index.html',
