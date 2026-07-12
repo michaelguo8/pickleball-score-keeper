@@ -107,6 +107,8 @@
   }
   .row-input.head { font-size: var(--fs-lg); font-weight: 700; }
   .row-input::placeholder { color: var(--muted); opacity: 0.75; }
+  /* Clear the placeholder on focus so the field reads as empty to type into. */
+  .row-input:focus::placeholder { color: transparent; }
   .row-input:focus { outline: none; background: var(--panel-2); }
   .team-card.a .row-input:focus { box-shadow: inset 3px 0 0 var(--teamA); }
   .team-card.b .row-input:focus { box-shadow: inset 3px 0 0 var(--teamB); }
@@ -150,7 +152,7 @@
   .zones { flex: 1; display: flex; min-height: 0; }
   .zone {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; position: relative; gap: 6px; padding: 12px;
+    cursor: pointer; position: relative; gap: 14px; padding: 12px;
   }
   .zone.a { background: linear-gradient(180deg, #12312e, #0e2522); }
   .zone.b { background: linear-gradient(180deg, #33290f, #241d0b); }
@@ -158,7 +160,9 @@
   .zones .zone:last-of-type { padding-right: max(12px, env(safe-area-inset-right)); }
   .zone:active.a { background: #174540; }
   .zone:active.b { background: #453913; }
-  .zone .tname { font-size: var(--fs-xl); font-weight: 700; letter-spacing: 0.3px; }
+  /* Team name is a small eyebrow over the player's name: the player on court
+     is the actionable info (it's who you tap for), the team reads via color. */
+  .zone .tname { font-size: var(--fs-xs); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
   .zone.a .tname { color: var(--teamA); }
   .zone.b .tname { color: var(--teamB); }
   .serve-pill {
@@ -169,9 +173,12 @@
   .serve-pill.hidden { visibility: hidden; }
   .zone.a .serve-pill { background: var(--teamA); color: #06231f; }
   .zone.b .serve-pill { background: var(--teamB); color: #2b1f04; }
-  .zone .score { font-size: clamp(72px, 24vw, 160px); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
-  .zone .pname { font-size: var(--fs-lg); color: var(--muted); }
-  .zone .hint { position: absolute; bottom: calc(12px + env(safe-area-inset-bottom)); font-size: var(--fs-sm); color: var(--muted); opacity: 0.8; padding: 0 8px; text-align: center; }
+  .zone .score {
+    font-size: clamp(72px, min(28vw, 22vh), 190px); font-weight: 800; line-height: 1;
+    font-variant-numeric: tabular-nums; margin: 8px 0;
+  }
+  .zone .pname { font-size: var(--fs-xl); font-weight: 700; letter-spacing: 0.3px; }
+  .zone .pname .pq { color: var(--muted); font-weight: 500; font-size: var(--fs-sm); }
 
   .menu-backdrop { position: fixed; inset: 0; z-index: 19; }
   .menu {
@@ -244,10 +251,7 @@
   .itl-card .vs .p.b { color: var(--teamB); }
   .itl-card .vs .v { font-size: var(--fs-sm); color: var(--muted); margin: 0 11px; }
   .itl-card .alloc { font-size: var(--fs-md); color: var(--muted); margin-bottom: 14px; }
-  .serve-static { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: var(--fs-md); }
-  .serve-static b.a { color: var(--teamA); }
-  .serve-static b.b { color: var(--teamB); }
-  .serve-static .why { color: var(--muted); }
+  .itl-card .vs .p .ball { vertical-align: -1px; margin-right: 8px; }
   .serve-pick { display: flex; align-items: center; gap: 11px; }
   .serve-pick .lbl { font-size: var(--fs-sm); color: var(--muted); white-space: nowrap; }
   .serve-pick .svc { flex: 1; display: flex; gap: 3px; background: #16202c; border: 1px solid var(--line); border-radius: var(--r-md); padding: 3px; }
@@ -475,12 +479,6 @@
     .topbar .round-line { display: inline; font-size: var(--fs-lg); }
     .topbar .rally-line { display: inline; font-size: var(--fs-sm); }
     .topbar .rally-line::before { content: ' · '; }
-    .zone { gap: 4px; padding-top: 6px; padding-bottom: 6px; }
-    .zone .tname { font-size: var(--fs-lg); }
-    .zone .serve-pill { font-size: var(--fs-2xs); padding: 4px 11px; letter-spacing: 1px; }
-    .zone .score { font-size: clamp(44px, 32vh, 140px); }
-    .zone .pname { display: none; }
-    .zone .hint { position: static; font-size: var(--fs-sm); }
     .tb-btn { width: 38px; height: 38px; border-radius: 9px; }
     .menu { top: calc(50px + env(safe-area-inset-top)); }
     .overlay { padding: 12px 20px; }
@@ -496,7 +494,6 @@
     .itl-card .vs .p { font-size: 26px; }
     .itl-card .alloc { font-size: var(--fs-sm); margin-bottom: 10px; }
     .itl-card .meta { font-size: var(--fs-sm); }
-    .serve-static { font-size: var(--fs-md); }
     .serve-pick .svc button { height: 46px; font-size: var(--fs-sm); }
     .itl-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .itl-actions.solo { grid-template-columns: 1fr; }
@@ -504,9 +501,6 @@
     .itl-ghost { height: 50px; font-size: var(--fs-sm); }
     .overlay .trophy svg { width: 46px; height: 46px; }
     .overlay .win-team { font-size: 32px; }
-    /* 3v4: keep the on-court / sub info visible even though it's tight */
-    .zones.has-subs .zone .pname { display: block; font-size: var(--fs-xs); }
-    .zones.has-subs .zone .subline { font-size: var(--fs-2xs); padding: 2px 11px; margin-top: 3px; }
     .sub-panel { padding: 12px; }
     .sub-card { padding: 18px 24px; gap: 6px; max-width: 320px; }
     .sub-card .sub-who { font-size: 21px; }
@@ -1004,7 +998,7 @@ function subLine(f, t) {
   return `<div class="subline">${esc(S.teams[t].players[ns.seed])} subs ${ns.inPoints === 1 ? 'next point' : `in ${ns.inPoints}`}</div>`;
 }
 
-function zoneHTML(t, showHint) {
+function zoneHTML(t) {
   const f = fmt();
   const p = S.teams[t].players[F.onCourt(f, t, S.round, S.matchup, S.rallies)];
   const isSub = f.sub && t === f.t4;
@@ -1012,19 +1006,16 @@ function zoneHTML(t, showHint) {
   // Both columns get the same rows so the team headers line up: when only the
   // team of 4 has a sub countdown, the other side gets an invisible spacer.
   const subRow = sub || (subLine(f, 1 - t) ? '<div class="subline ghost">&nbsp;</div>' : '');
-  // The hint teaches the tap gesture; suppress it while a sub pause is up.
-  const hint = showHint && !S.pendingSub;
   // Only rotating formats need the "on court" qualifier; elsewhere the seed
   // plays the whole matchup, so the bare name is enough.
-  const pname = isSub ? `${esc(p)} on court` : esc(p);
+  const pname = isSub ? `${esc(p)} <span class="pq">on court</span>` : esc(p);
   return `
       <div class="zone ${t === 0 ? 'a' : 'b'}" onpointerdown="point(${t})">
-        <div class="serve-pill ${S.server === t ? '' : 'hidden'}">${BALL(14)} Serving</div>
         <div class="tname">${esc(S.teams[t].name)}</div>
-        <div class="score">${S.scores[t]}</div>
         <div class="pname">${pname}</div>
+        <div class="score">${S.scores[t]}</div>
         ${subRow}
-        ${hint ? `<div class="hint">tap when ${esc(p)} wins the rally</div>` : ''}
+        <div class="serve-pill ${S.server === t ? '' : 'hidden'}">${BALL(14)} Serving</div>
       </div>`;
 }
 
@@ -1053,8 +1044,6 @@ function renderGame() {
   const len = f.laneLength[S.round];
   const is34 = f.id === '3v4';
   const pt = Math.min(S.rallies + 1, len);
-  // Teach the tap gesture only during the very first matchup, then get out of the way.
-  const showHint = S.round === 0 && S.matchup === 0;
   const roundLabel = S.overtime ? 'Golden point' : `Round ${S.round + 1}/${F.rounds(f)}`;
   const rallyLabel = S.overtime
     ? 'Next rally wins it all'
@@ -1074,8 +1063,8 @@ function renderGame() {
     </div>
     <div class="stage">
       <div class="zones${is34 ? ' has-subs' : ''}">
-        ${zoneHTML(L, showHint)}
-        ${zoneHTML(R, showHint)}
+        ${zoneHTML(L)}
+        ${zoneHTML(R)}
       </div>
       ${S.pendingSub ? subOverlay() : ''}
       ${S.phase === 'between' ? interstitial() : ''}
@@ -1169,7 +1158,8 @@ function interstitial() {
               return `<span class="sp-seg"><b>${esc(S.teams[f.t4].players[seg.seed])}</b> <span class="sp-pts">${range}</span></span>`;
             }).join('<span class="sp-arrow">→</span>')}</span>
           </div>` : '';
-  // Serve is only a choice before the game's first rally; afterwards the rally winner serves.
+  // Serve is only a choice before the game's first rally; afterwards the rally
+  // winner serves — shown as the ball next to their name in the vs row.
   const serveArea = atStart ? `
         <div class="serve-pick">
           <span class="lbl">First serve</span>
@@ -1177,8 +1167,8 @@ function interstitial() {
             <button class="${srv === L ? `on ${cls(L)}` : ''}" onclick="setServer(${L})">${srv === L ? BALL(14) : ''}${esc(pL)}</button>
             <button class="${srv === R ? `on ${cls(R)}` : ''}" onclick="setServer(${R})">${srv === R ? BALL(14) : ''}${esc(pR)}</button>
           </div>
-        </div>` : `
-        <div class="serve-static">${BALL(15)}<span><b class="${cls(srv)}">${esc(lanePlayer(srv))}</b> serves first <span class="why">· won the last rally</span></span></div>`;
+        </div>` : '';
+  const vsName = (t, name) => `<span class="p ${cls(t)}">${!atStart && srv === t ? BALL(22) : ''}${esc(name)}</span>`;
   // Status is stated once in the eyebrow and once in the progress caption; the
   // card just names what's up next (round only — the number lives in the caption).
   const eyebrowIcon = S.overtime ? icons.bolt(15) : atStart ? BALL(13) : icons.check(15);
@@ -1198,7 +1188,7 @@ function interstitial() {
             <span class="chip${S.overtime ? ' gold' : ''}">${S.overtime ? 'Golden point' : 'Up next'}</span>
             <span class="meta">${roundMeta}</span>
           </div>
-          <div class="vs"><span class="p ${cls(L)}">${esc(pL)}</span><span class="v">vs</span><span class="p ${cls(R)}">${esc(pR)}</span></div>
+          <div class="vs">${vsName(L, pL)}<span class="v">vs</span>${vsName(R, pR)}</div>
           <div class="alloc">${S.overtime ? 'Sudden death — one rally wins it all' : (is34 ? `${len} points this matchup` : `${len} rallies this matchup`)}</div>
           ${subplan}
           ${serveArea}
