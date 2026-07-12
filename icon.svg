@@ -1,31 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Pickleball Score Keeper">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0fb9a6"/>
-      <stop offset="1" stop-color="#0a7d72"/>
+      <stop offset="0" stop-color="#1a2c40"/>
+      <stop offset="1" stop-color="#0d141d"/>
     </linearGradient>
-    <radialGradient id="ball" cx="0.38" cy="0.34" r="0.75">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#e9e4d6"/>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a84ff"/>
+      <stop offset="1" stop-color="#5ac8fa"/>
+    </linearGradient>
+    <radialGradient id="ball" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0" stop-color="#ffe566"/>
+      <stop offset="1" stop-color="#f2bf00"/>
     </radialGradient>
   </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
-  <!-- paddle -->
-  <g transform="rotate(-22 256 256)">
-    <rect x="150" y="92" width="150" height="220" rx="70" fill="#f4b740"/>
-    <rect x="150" y="92" width="150" height="220" rx="70" fill="none" stroke="#c98a16" stroke-width="8"/>
-    <rect x="205" y="300" width="40" height="92" rx="16" fill="#c98a16"/>
+  <!-- rally arc: 300° of the ball's flight path -->
+  <path d="M 256 86 A 170 170 0 1 1 108.8 171" fill="none" stroke="url(#ring)" stroke-width="30" stroke-linecap="round"/>
+  <!-- 11, the score you play to (SF outlines, weight 800) -->
+  <g fill="#eef4f8">
+    <path d="M206.0 327.0V215.9H205.3L169.9 239.8V210.8L205.9 186.1H239.3V327.0Z"/>
+    <path d="M300.4 327.0V215.9H299.8L264.3 239.8V210.8L300.4 186.1H333.7V327.0Z"/>
   </g>
-  <!-- pickleball -->
-  <g transform="translate(312 320)">
-    <circle r="96" fill="url(#ball)" stroke="#cfc8b4" stroke-width="4"/>
-    <g fill="#0a7d72" opacity="0.85">
-      <circle cx="0" cy="-46" r="11"/>
-      <circle cx="44" cy="-14" r="11"/>
-      <circle cx="27" cy="40" r="11"/>
-      <circle cx="-27" cy="40" r="11"/>
-      <circle cx="-44" cy="-14" r="11"/>
-      <circle cx="0" cy="6" r="11"/>
-    </g>
+  <!-- ball at the head of the rally (kept inside the maskable safe zone) -->
+  <circle cx="115.7" cy="175" r="42" fill="url(#ball)" stroke="#d9a800" stroke-width="4"/>
+  <g fill="#c79000">
+    <circle cx="115.7" cy="159" r="6.8"/>
+    <circle cx="129.5" cy="183.6" r="6.8"/>
+    <circle cx="101.1" cy="183.6" r="6.8"/>
   </g>
 </svg>
