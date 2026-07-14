@@ -1,10 +1,12 @@
-/* Service worker: network-first for the page and its script (so updates appear
-   on next refresh, in sync), cache-first for assets. Falls back to cache offline. */
-const CACHE = 'pb-score-v5';
+/* Service worker: network-first for the page, styles, and scripts (so updates
+   appear together), cache-first for assets. Falls back to cache offline. */
+const CACHE = 'pb-score-v6';
 const ASSETS = [
   './',
   './index.html',
+  './styles.css',
   './formats.js',
+  './app.js',
   './manifest.webmanifest',
   './icon.svg',
   './icon-192.png',
@@ -25,19 +27,34 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+function runtimeFallback(request) {
+  return caches.match(request).then((cached) => {
+    if (cached) return cached;
+    return request.mode === 'navigate' ? caches.match('./index.html') : null;
+  });
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
 
-  // Page loads and the app's logic: network-first so a refresh always gets the
-  // latest version, and index.html + formats.js never drift out of sync.
-  if (request.mode === 'navigate' || new URL(request.url).pathname.endsWith('/formats.js')) {
+  // Runtime files are network-first so HTML, CSS, and both scripts never drift.
+  const pathname = new URL(request.url).pathname;
+  const runtimeFile = ['/styles.css', '/formats.js', '/app.js']
+    .some((file) => pathname.endsWith(file));
+  if (request.mode === 'navigate' || runtimeFile) {
     event.respondWith(
       fetch(request).then((response) => {
+        const responseUrl = new URL(response.url || request.url);
+        const sameOrigin = responseUrl.origin === self.location.origin;
+        if (!response.ok || !sameOrigin) {
+          return runtimeFallback(request).then((cached) => cached || response);
+        }
         const copy = response.clone();
-        caches.open(CACHE).then((cache) => cache.put(request, copy));
-        return response;
-      }).catch(() => caches.match(request).then((c) => c || caches.match('./index.html')))
+        return caches.open(CACHE)
+          .then((cache) => cache.put(request, copy))
+          .then(() => response);
+      }).catch(() => runtimeFallback(request))
     );
     return;
   }

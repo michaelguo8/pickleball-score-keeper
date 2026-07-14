@@ -4,6 +4,12 @@
   "private": true,
   "description": "Courtside scorekeeper PWA for team pickleball ladders (4v4, 3v3, 3v4).",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test test/formats.test.js test/sw.test.js test/ui.test.js",
+    "test:browser": "playwright test",
+    "test:browser:install": "playwright install chromium",
+    "test:all": "npm test && npm run test:browser"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1"
   }
 }
