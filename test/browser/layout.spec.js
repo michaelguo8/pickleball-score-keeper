@@ -21,6 +21,34 @@ async function expectNoPageOverflow(page) {
   expect(overflow.vertical, 'page should not overflow vertically').toBeLessThanOrEqual(1);
 }
 
+test('3v3 schedule and team identities survive setup, reload and a side swap', async ({ page }) => {
+  await page.goto('/');
+  const group = page.getByRole('group', { name: 'Team format' });
+  const points = page.getByRole('group', { name: 'Points per matchup' });
+  await expect(group.getByRole('button')).toHaveCount(3);
+  await expect(points).toHaveCount(0);
+  await group.getByRole('button', { name: '3v3', exact: true }).click();
+  await expect(points.getByRole('button', { name: '10 / 8 / 6' })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByLabel('Team A name').fill('Wallabies 1');
+  await page.getByLabel('Team B name').fill('Koalas 1');
+  await page.getByRole('button', { name: 'Add player names' }).click();
+  await page.getByLabel('Team B player 1').fill('Sam');
+  await points.getByRole('button', { name: '10 every round' }).click();
+  await page.reload();
+  await expect(group.getByRole('button', { name: '3v3', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(points.getByRole('button', { name: '10 every round' })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Start game' }).click();
+  const servers = page.locator('.serve-pick button');
+  await expect(servers).toHaveText(['Wallabies 1', 'Koalas 1']);
+  await page.getByRole('button', { name: 'Swap sides' }).click();
+  await expect(servers).toHaveText(['Koalas 1', 'Wallabies 1']);
+  await page.getByRole('button', { name: 'Koalas 1', exact: true }).click();
+  await page.getByRole('button', { name: 'Start rallies' }).click();
+  await expect(page.locator('.zone .primary')).toHaveText(['Sam', 'Wallabies 1']);
+  await expect(page.locator('.zone .secondary')).toHaveText(['Koalas 1', 'Player 1']);
+  await expect(page.locator('.zone.b .serve-pill')).toBeVisible();
+});
+
 test('setup and scoring layouts fit the viewport', async ({ page }, testInfo) => {
   const viewport = testInfo.project.use.viewport;
   const landscape = viewport.width > viewport.height;

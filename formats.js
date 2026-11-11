@@ -25,6 +25,25 @@
     [ [[3, 2], [0, 4]], [[1, 4], [2, 2]], [[2, 2], [3, 4]] ]
   ];
 
+  const TEAM_SINGLES_3V3 = {
+    id: '3v3',
+    pointsLabel: '10 / 8 / 6',
+    name: '3v3 Team Singles',
+    blurb: 'Two teams of 3 · seeds play their counterpart',
+    teamSizes: [3, 3],
+    unit: 'Seed',            // noun for a within-round matchup
+    doneWord: 'matchup complete',
+    progressWord: 'Matchup',
+    lanesPerRound: 3,
+    laneLength: [10, 8, 6],  // points contested per matchup, by round
+    target: 33,
+    winBy: 2,
+    rules:
+      '3 rounds &middot; seeds play their counterparts each round<br>' +
+      'Round 1: 10 rallies per matchup &middot; Round 2: 8 &middot; Round 3: 6<br>' +
+      'Team scores carry over between rounds'
+  };
+
   const FORMATS = {
     '4v4': {
       id: '4v4',
@@ -43,21 +62,18 @@
         'Round 1: 8 rallies per matchup &middot; Round 2: 6 &middot; Round 3: 4<br>' +
         'Team scores carry over between rounds'
     },
-    '3v3': {
-      id: '3v3',
-      name: '3v3 Team Singles',
-      blurb: 'Two teams of 3 · seeds play their counterpart',
-      teamSizes: [3, 3],
-      unit: 'Seed',            // noun for a within-round matchup
-      doneWord: 'matchup complete',
-      progressWord: 'Matchup',
-      lanesPerRound: 3,
-      laneLength: [10, 8, 6],  // points contested per matchup, by round
-      target: 33,
-      winBy: 2,
+    '3v3': TEAM_SINGLES_3V3,
+    '3v3-10': {
+      ...TEAM_SINGLES_3V3,
+      id: '3v3-10',
+      variantOf: '3v3',
+      pointsLabel: '10 every round',
+      shortName: '3v3 (10 pts)',
+      name: '3v3 Team Singles (10 points)',
+      laneLength: [10, 10, 10],
       rules:
         '3 rounds &middot; seeds play their counterparts each round<br>' +
-        'Round 1: 10 rallies per matchup &middot; Round 2: 8 &middot; Round 3: 6<br>' +
+        '10 rallies per matchup every round<br>' +
         'Team scores carry over between rounds'
     },
     '3v4': {

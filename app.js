@@ -5,6 +5,7 @@
 // them through fmt(). STORE_KEY is shared — a saved game records its own format.
 const F = window.PBFormats;
 const DEFAULT_FORMAT = '4v4';
+const TEAM_NAME_PRESETS = ['Wallabies 1', 'Koalas 1', 'Dragons 1', 'Gang-Gangs 1', 'Koalas 2', 'Dragons 2'];
 const STORE_KEY = 'pb-4v4-state-v1';
 const SCORE_HINT_KEY = 'pb-score-scoring-hint-v1';
 function fmt() { return F.FORMATS[S.format] || F.FORMATS[DEFAULT_FORMAT]; }
@@ -12,6 +13,7 @@ function fmt() { return F.FORMATS[S.format] || F.FORMATS[DEFAULT_FORMAT]; }
 /* ===== State ===== */
 function freshState(teams, format) {
   return {
+    version: 2,              // blank player names are preserved in the roster
     phase: 'between',        // 'setup' | 'between' | 'play' | 'done'
     format,                  // key into PBFormats.FORMATS
     teams,                   // [{name, players:[...]}, {name, players:[...]}]
@@ -22,7 +24,7 @@ function freshState(teams, format) {
     server: 0,               // team serving next rally (winner of last rally)
     pendingSub: false,       // play paused for a rolling sub until the user confirms
     swapped: false,          // true = team B on the left side of the screen
-    overtime: false,         // golden point at 36-36 after all rounds
+    overtime: false,         // golden point when tied after all rounds
     note: 'Game on!',
     hist: [],                // undo stack (past states)
     future: []               // redo stack (states undone from)
@@ -41,6 +43,14 @@ function load() {
       if (st.format === undefined) st.format = DEFAULT_FORMAT; // pre-format saves are 4v4
       if (st.future === undefined) st.future = [];             // pre-redo saves
       if (st.pendingSub === undefined) st.pendingSub = false;  // pre-sub-pause saves
+      if (!st.version && st.phase !== 'setup') {
+        // Earlier matches stored the generated label as if the scorer typed it.
+        st.teams.forEach((team, t) => {
+          team.players = team.players.map((name, i) =>
+            name === `Player ${i + 1}` || name === `${t === 0 ? 'A' : 'B'}${i + 1}` ? '' : name);
+        });
+        st.version = 2;
+      }
       return st;
     }
   } catch (e) {}
@@ -91,7 +101,6 @@ function redo() {
 }
 
 function hasWinner() {
-  // Golden point: at 36-36 after all rounds, the next rally wins outright.
   return F.checkWinner(fmt(), S.scores, S.overtime);
 }
 
@@ -148,7 +157,7 @@ function advanceMatchup() {
     S.round++;
   }
   if (S.round >= F.rounds(f)) {
-    // All rounds done at 36-36 — the final lane's last pairing plays golden point.
+    // The final pairing plays a golden point when regulation ends in a tie.
     S.overtime = true;
     S.round = F.rounds(f) - 1;
     S.matchup = f.lanesPerRound - 1;
@@ -192,7 +201,7 @@ function startGameFromSetup() {
   const teams = [0, 1].map(t => ({
     name: (S.teams[t].name || '').trim() || (t === 0 ? 'Team A' : 'Team B'),
     players: Array.from({ length: f.teamSizes[t] }, (_, p) =>
-      (S.teams[t].players[p] || '').trim() || `${t === 0 ? 'A' : 'B'}${p + 1}`)
+      (S.teams[t].players[p] || '').trim())
   }));
   S = freshState(teams, S.format);
   render();
@@ -367,6 +376,7 @@ function render() {
 }
 
 function rulesOverview(f) {
+  const tieScore = F.totalPool(f) / 2;
   const matchupRule = f.sub ? `
       <div class="rules-team-rules">
         <div class="rules-team-rule t3">
@@ -388,7 +398,7 @@ function rulesOverview(f) {
         <div class="rules-fact"><strong>Rally scoring</strong>Winner serves next</div>
         <div class="rules-fact"><strong>Scores carry</strong>Between matchups and rounds</div>
         <div class="rules-fact"><strong>First to ${f.target}</strong>Win by ${f.winBy}</div>
-        <div class="rules-fact"><strong>36–36</strong>Final pairing plays 1 golden point</div>
+        <div class="rules-fact"><strong>${tieScore}–${tieScore}</strong>Final pairing plays 1 golden point</div>
       </div>
     </div>`;
 }
@@ -477,8 +487,18 @@ function renderSetup() {
   const t = S.teams;
   const f = fmt();
   const asymmetric = f.teamSizes[0] !== f.teamSizes[1];
-  const seg = Object.values(F.FORMATS).map(ff => `
-        <button class="seg ${ff.id === S.format ? 'on' : ''}" onclick="pickFormat('${ff.id}')">${ff.id}</button>`).join('');
+  const formats = Object.values(F.FORMATS);
+  const group = f.variantOf || f.id;
+  const formatButton = (id, label, selected) => `
+        <button class="seg ${selected ? 'on' : ''}" aria-pressed="${selected}" onclick="pickFormat('${id}')">${label}</button>`;
+  const seg = formats.filter(ff => !ff.variantOf).map(ff =>
+    formatButton(ff.id === group ? f.id : ff.id, ff.id, ff.id === group)).join('');
+  const pointsPicker = group === '3v3' ? `
+          <div class="points-picker" role="group" aria-labelledby="points-label">
+            <span class="fmt-lbl" id="points-label">Points per matchup</span>
+            <div class="points-buttons">${formats.filter(ff => (ff.variantOf || ff.id) === group)
+              .map(ff => formatButton(ff.id, ff.pointsLabel, ff.id === f.id)).join('')}</div>
+          </div>` : '';
   // The caption drawer lists the format as label/value facts. Team labels in
   // the sub format take the team colors, echoing the cards and rules modal.
   const fact = (lbl, val, cls) => `<span class="fmt-lbl${cls ? ' ' + cls : ''}">${lbl}</span><span class="fmt-val">${val}</span>`;
@@ -488,7 +508,7 @@ function renderSetup() {
       + fact(`Team of ${f.teamSizes[f.t4]}`, `${f.t4Quota.join('→')}&nbsp;points per&nbsp;matchup`, 't4')
       + fact('Subs', 'Rolling')
     : fact('Rounds', F.rounds(f))
-      + fact('Points', `${f.laneLength.join('→')} per&nbsp;matchup`)
+      + (pointsPicker ? '' : fact('Points', `${f.laneLength.join('→')} per&nbsp;matchup`))
       + fact('Matchups', 'Seeds play their counterpart');
   const card = (ti, cls, label) => {
     const size = f.teamSizes[ti];
@@ -496,7 +516,7 @@ function renderSetup() {
         <input class="row-input" id="p${ti}_${p}" placeholder="Player ${p + 1}" value="${esc(t[ti].players[p] || '')}" autocomplete="off" aria-label="${label} player ${p + 1}">`).join('') : '';
     return `
       <div class="team-card ${cls}">
-        <input class="row-input head" id="tname${ti}" placeholder="${label}" value="${esc(t[ti].name || '')}" autocomplete="off" aria-label="${label} name">
+        <input class="row-input head" id="tname${ti}" list="team-name-presets" placeholder="${label}" value="${esc(t[ti].name || '')}" autocomplete="off" aria-label="${label} name">
         ${asymmetric ? `<div class="team-size">Fields ${size} players</div>` : ''}
         ${players}
       </div>`;
@@ -505,16 +525,20 @@ function renderSetup() {
     <div class="setup">
       <div class="setup-scroll">
         <h1><img src="./icon.svg" class="title-icon" alt=""> Pickleball Scores</h1>
-        <div class="seg-ctrl">${seg}</div>
+        <div class="seg-ctrl" role="group" aria-label="Team format">${seg}</div>
         <div class="fmt-caption">
+          ${pointsPicker}
           <div class="fmt-facts">${facts}</div>
-          <button class="fmt-info-btn" onclick="openRules()" aria-label="View detailed ${f.id} rules" title="View detailed rules">${icons.info(15)} Rules</button>
+          <button class="fmt-info-btn" onclick="openRules()" aria-label="View detailed ${f.shortName || f.id} rules" title="View detailed rules">${icons.info(15)} Rules</button>
         </div>
-        <button class="disclosure" onclick="togglePlayers()">${playersOpen ? 'Hide player names' : 'Add player names'}</button>
+        <button class="disclosure" aria-expanded="${playersOpen}" onclick="togglePlayers()">${playersOpen ? 'Hide player names' : 'Add player names <span>(optional)</span>'}</button>
         <div class="team-cards">
           ${card(0, 'a', 'Team A')}
           ${card(1, 'b', 'Team B')}
         </div>
+        <datalist id="team-name-presets">
+          ${TEAM_NAME_PRESETS.map(name => `<option value="${esc(name)}"></option>`).join('')}
+        </datalist>
       </div>
       <div class="setup-footer">
         <button class="start-btn" onclick="startGameFromSetup()">Start game</button>
@@ -531,18 +555,24 @@ function renderSetup() {
 
 function sideOrder() { return S.swapped ? [1, 0] : [0, 1]; }
 
+function playerName(t, seed) {
+  return S.teams[t].players[seed] || `Player ${seed + 1}`;
+}
+
 // Rolling-sub countdown for the team of 4 (3v4 only): who subs on next and
 // when. '' once the player on court is the last one in this matchup.
 function subLine(f, t) {
   if (f.id !== '3v4' || t !== f.t4 || S.overtime) return '';
   const ns = F.nextSub(f, S.round, S.matchup, S.rallies);
   if (!ns) return '';
-  return `<div class="subline">${esc(S.teams[t].players[ns.seed])} subs ${ns.inPoints === 1 ? 'next point' : `in ${ns.inPoints}`}</div>`;
+  return `<div class="subline">${esc(playerName(t, ns.seed))} subs ${ns.inPoints === 1 ? 'next point' : `in ${ns.inPoints}`}</div>`;
 }
 
 function zoneHTML(t) {
   const f = fmt();
-  const p = S.teams[t].players[F.onCourt(f, t, S.round, S.matchup, S.rallies)];
+  const seed = F.onCourt(f, t, S.round, S.matchup, S.rallies);
+  const named = Boolean(S.teams[t].players[seed]);
+  const p = playerName(t, seed);
   const isSub = f.sub && t === f.t4;
   const sub = subLine(f, t);
   // Both columns get the same rows so the team headers line up: when only the
@@ -553,8 +583,8 @@ function zoneHTML(t) {
   const pname = isSub ? `${esc(p)} <span class="pq">on court</span>` : esc(p);
   return `
       <div class="zone ${t === 0 ? 'a' : 'b'}" onclick="point(${t})">
-        <div class="tname">${esc(S.teams[t].name)}</div>
-        <div class="pname">${pname}</div>
+        <div class="tname ${named ? 'secondary' : 'primary'}">${esc(S.teams[t].name)}</div>
+        <div class="pname ${named ? 'primary' : 'secondary'}">${pname}</div>
         <div class="score">${S.scores[t]}</div>
         ${subRow}
         <div class="serve-pill ${S.server === t ? '' : 'hidden'}">${BALL(14)} Serving</div>
@@ -567,12 +597,12 @@ function zoneHTML(t) {
 function subOverlay() {
   const f = fmt();
   const t = f.t4;
-  const onNow = S.teams[t].players[F.onCourt(f, t, S.round, S.matchup, S.rallies)];
-  const prev = S.teams[t].players[F.onCourt(f, t, S.round, S.matchup, S.rallies - 1)];
+  const onNow = playerName(t, F.onCourt(f, t, S.round, S.matchup, S.rallies));
+  const prev = playerName(t, F.onCourt(f, t, S.round, S.matchup, S.rallies - 1));
   return `
       <div class="sub-panel">
         <div class="sub-card">
-          <div class="sub-icon">${icons.sub(36)}</div>
+          <div class="sub-team">${icons.sub(20)} ${esc(S.teams[t].name)}</div>
           <div class="sub-who">${esc(onNow)} subs on now</div>
           <div class="sub-for">taking over from ${esc(prev)}</div>
           <button class="sub-go" onclick="confirmSub()">Continue play</button>
@@ -660,9 +690,8 @@ function interstitial() {
   // so ask the schedule). Between lanes rallies is 0 (the lane's openers); in
   // the golden point rallies sits at the lane end, so this keeps the pair that
   // finished regulation rather than resetting to the lane's first server.
-  const lanePlayer = t => S.teams[t].players[F.onCourt(f, t, S.round, seed, S.rallies)];
-  const pL = lanePlayer(L);
-  const pR = lanePlayer(R);
+  const onCourt = [0, 1].map(t => F.onCourt(f, t, S.round, seed, S.rallies));
+  const sameUnnamedPair = !f.sub && onCourt.every((slot, t) => !S.teams[t].players[slot]);
   const len = f.laneLength[S.round];
   const lanesPer = f.lanesPerRound;
   const done = S.round * lanesPer + S.matchup;
@@ -692,20 +721,32 @@ function interstitial() {
             <span class="sp-lbl">${esc(S.teams[f.t4].name)} subs</span>
             <span class="sp-flow">${plan.map(seg => {
               const range = seg.from === seg.to ? `${seg.from}` : `${seg.from}–${seg.to}`;
-              return `<span class="sp-seg"><b>${esc(S.teams[f.t4].players[seg.seed])}</b> <span class="sp-pts">${range}</span></span>`;
+              return `<span class="sp-seg"><b>${esc(playerName(f.t4, seg.seed))}</b> <span class="sp-pts">${range}</span></span>`;
             }).join('<span class="sp-arrow">→</span>')}</span>
           </div>` : '';
-  // Serve is only a choice before the game's first rally; afterwards the rally
-  // winner serves — shown as the ball next to their name in the vs row.
+  // After the first rally the match has a server, including at changeovers.
   const serveArea = atStart ? `
         <div class="serve-pick">
           <span class="lbl">First serve</span>
           <div class="svc">
-            <button class="${srv === L ? `on ${cls(L)}` : ''}" onclick="setServer(${L})">${srv === L ? BALL(14) : ''}${esc(pL)}</button>
-            <button class="${srv === R ? `on ${cls(R)}` : ''}" onclick="setServer(${R})">${srv === R ? BALL(14) : ''}${esc(pR)}</button>
+            <button class="${srv === L ? `on ${cls(L)}` : ''}" aria-pressed="${srv === L}" onclick="setServer(${L})">${srv === L ? BALL(14) : ''}${esc(S.teams[L].name)}</button>
+            <button class="${srv === R ? `on ${cls(R)}` : ''}" aria-pressed="${srv === R}" onclick="setServer(${R})">${srv === R ? BALL(14) : ''}${esc(S.teams[R].name)}</button>
           </div>
-        </div>` : '';
-  const vsName = (t, name) => `<span class="p ${cls(t)}">${!atStart && srv === t ? BALL(22) : ''}${esc(name)}</span>`;
+        </div>` : `<div class="next-serve">${BALL(14)} ${esc(S.teams[srv].name)} serves next</div>`;
+  const pairingSide = t => {
+    const slot = onCourt[t];
+    const team = S.teams[t];
+    const name = team.players[slot];
+    return `<div class="pairing-side ${cls(t)}">
+      <strong>${esc(name || team.name)}</strong>
+      <span>${esc(name ? team.name : playerName(t, slot))}</span>
+    </div>`;
+  };
+  const pairing = sameUnnamedPair
+    ? `<div class="shared-position"><strong>${esc(playerName(L, onCourt[L]))}</strong> from each team</div>`
+    : `<div class="pairing">${pairingSide(L)}<span class="versus">vs</span>${pairingSide(R)}</div>`;
+  const orderHint = atStart && S.teams.some(team => team.players.includes(''))
+    ? '<div class="order-hint">Number each team’s players in playing order and keep that order across rounds.</div>' : '';
   // Status is stated once in the eyebrow and once in the progress caption; the
   // card just names what's up next.
   const eyebrowIcon = S.overtime ? icons.bolt(15) : atStart ? BALL(13) : icons.check(15);
@@ -723,8 +764,9 @@ function interstitial() {
           <div class="chiprow">
             <span class="chip${S.overtime ? ' gold' : ''}">${S.overtime ? 'Golden point' : 'Up next'}</span>
           </div>
-          <div class="vs">${vsName(L, pL)}<span class="v">vs</span>${vsName(R, pR)}</div>
+          ${pairing}
           <div class="alloc">${S.overtime ? 'Sudden death — one rally wins it all' : (is34 ? `${len} points this matchup` : `${len} rallies this matchup`)}</div>
+          ${orderHint}
           ${subplan}
           ${serveArea}
         </div>
