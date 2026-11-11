@@ -29,7 +29,15 @@ test('3v3 schedule and team identities survive setup, reload and a side swap', a
   await expect(points).toHaveCount(0);
   await group.getByRole('button', { name: '3v3', exact: true }).click();
   await expect(points.getByRole('button', { name: '10 / 8 / 6' })).toHaveAttribute('aria-pressed', 'true');
-  await page.getByLabel('Team A name').fill('Wallabies 1');
+  const presets = ['Wallabies 1', 'Koalas 1', 'Dragons 1', 'Gang-Gangs 1', 'Koalas 2', 'Dragons 2'];
+  for (const side of ['Team A', 'Team B']) {
+    const picker = page.getByRole('combobox', { name: `Choose a preset for ${side}` });
+    await expect(picker).toBeVisible();
+    await expect(picker.locator('option:enabled')).toHaveText(presets);
+    await picker.selectOption(side === 'Team A' ? 'Wallabies 1' : 'Koalas 2');
+  }
+  await expect(page.getByLabel('Team A name')).toHaveValue('Wallabies 1');
+  await expect(page.getByLabel('Team B name')).toHaveValue('Koalas 2');
   await page.getByLabel('Team B name').fill('Koalas 1');
   await page.getByRole('button', { name: 'Add player names' }).click();
   await page.getByLabel('Team B player 1').fill('Sam');
