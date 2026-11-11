@@ -5,6 +5,7 @@ const { defineConfig } = require('@playwright/test');
 const viewports = [
   { name: 'portrait-320x568', width: 320, height: 568 },
   { name: 'portrait-402x874', width: 402, height: 874 },
+  { name: 'portrait-430x932', width: 430, height: 932 },
   { name: 'landscape-667x375', width: 667, height: 375 },
   { name: 'landscape-874x402', width: 874, height: 402 }
 ];

@@ -34,11 +34,23 @@ test('3v3 schedule and team identities survive setup, reload and a side swap', a
     const picker = page.getByRole('combobox', { name: `Choose a preset for ${side}` });
     await expect(picker).toBeVisible();
     await expect(picker.locator('option:enabled')).toHaveText(presets);
-    await picker.selectOption(side === 'Team A' ? 'Wallabies 1' : 'Koalas 2');
+    await picker.selectOption(side === 'Team A' ? 'Gang-Gangs 1' : 'Koalas 2');
   }
-  await expect(page.getByLabel('Team A name')).toHaveValue('Wallabies 1');
+  await expect(page.getByLabel('Team A name')).toHaveValue('Gang-Gangs 1');
   await expect(page.getByLabel('Team B name')).toHaveValue('Koalas 2');
-  await page.getByLabel('Team B name').fill('Koalas 1');
+  await page.getByLabel('Team B name').fill('Koalas Social Crew');
+  for (const side of ['Team A', 'Team B']) {
+    const width = await page.getByLabel(`${side} name`).evaluate(input => {
+      const style = getComputedStyle(input);
+      const context = document.createElement('canvas').getContext('2d');
+      context.font = style.font;
+      return {
+        text: context.measureText(input.value).width,
+        available: input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+      };
+    });
+    expect(width.available, `${side} should show its whole name without horizontal scrolling`).toBeGreaterThanOrEqual(width.text);
+  }
   await page.getByRole('button', { name: 'Add player names' }).click();
   await page.getByLabel('Team B player 1').fill('Sam');
   await points.getByRole('button', { name: '10 every round' }).click();
@@ -47,13 +59,13 @@ test('3v3 schedule and team identities survive setup, reload and a side swap', a
   await expect(points.getByRole('button', { name: '10 every round' })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Start game' }).click();
   const servers = page.locator('.serve-pick button');
-  await expect(servers).toHaveText(['Wallabies 1', 'Koalas 1']);
+  await expect(servers).toHaveText(['Gang-Gangs 1', 'Koalas Social Crew']);
   await page.getByRole('button', { name: 'Swap sides' }).click();
-  await expect(servers).toHaveText(['Koalas 1', 'Wallabies 1']);
-  await page.getByRole('button', { name: 'Koalas 1', exact: true }).click();
+  await expect(servers).toHaveText(['Koalas Social Crew', 'Gang-Gangs 1']);
+  await page.getByRole('button', { name: 'Koalas Social Crew', exact: true }).click();
   await page.getByRole('button', { name: 'Start rallies' }).click();
-  await expect(page.locator('.zone .primary')).toHaveText(['Sam', 'Wallabies 1']);
-  await expect(page.locator('.zone .secondary')).toHaveText(['Koalas 1', 'Player 1']);
+  await expect(page.locator('.zone .primary')).toHaveText(['Sam', 'Gang-Gangs 1']);
+  await expect(page.locator('.zone .secondary')).toHaveText(['Koalas Social Crew', 'Player 1']);
   await expect(page.locator('.zone.b .serve-pill')).toBeVisible();
 });
 
@@ -96,6 +108,16 @@ test('setup and scoring layouts fit the viewport', async ({ page }, testInfo) =>
       expect(fieldBox.y + fieldBox.height, `${label} should be reachable above the footer`)
         .toBeLessThanOrEqual(currentFooter.y + 0.5);
     }
+  }
+
+  for (const side of ['Team A', 'Team B']) {
+    const picker = page.getByRole('combobox', { name: `Choose a preset for ${side}` });
+    await picker.scrollIntoViewIfNeeded();
+    const pickerBox = await expectInsideViewport(picker, viewport, `${side} preset picker`);
+    const currentFooter = await footer.boundingBox();
+    expect(pickerBox.height, 'preset pickers should have a touch-sized target').toBeGreaterThanOrEqual(44);
+    expect(pickerBox.y + pickerBox.height, 'preset pickers should remain reachable above the footer')
+      .toBeLessThanOrEqual(currentFooter.y + 0.5);
   }
 
   await expectNoPageOverflow(page);

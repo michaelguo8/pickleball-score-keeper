@@ -95,21 +95,22 @@ button:active:not(:disabled) { transform: scale(0.97); }
 }
 .fmt-info-btn:active { background: rgba(10, 132, 255, 0.22); }
 
-.team-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 560px; margin: 0 auto; }
-@media (max-width: 420px) { .team-cards { grid-template-columns: 1fr; } }
+.team-cards { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; max-width: 560px; margin: 0 auto; }
+@media (max-width: 600px) { .team-cards { grid-template-columns: minmax(0, 1fr); } }
 .team-card {
   background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--teamA);
   border-radius: var(--r-md); overflow: hidden;
 }
 .team-card.b { border-top-color: var(--teamB); }
 .team-card > *:not(:first-child) { border-top: 1px solid var(--line); }
-.team-name-row { display: flex; align-items: center; gap: 4px; padding-right: 6px; }
-.team-name-row input { flex: 1; min-width: 0; }
+.team-name-row { display: flex; flex-direction: column; }
+.team-name-row input { min-width: 0; }
 .team-picker {
-  width: 106px; min-height: 44px; padding: 0 6px; font: inherit; font-size: 16px;
+  width: 100%; min-height: 44px; padding: 0 16px; font: inherit; font-size: 16px;
   background: var(--panel-2); color: var(--text); color-scheme: dark;
-  border: 1px solid var(--line); border-radius: var(--r-sm); cursor: pointer;
+  border: none; border-top: 1px solid var(--line); border-radius: 0; cursor: pointer;
 }
+.team-picker:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .row-input {
   display: block; width: 100%; padding: 15px 16px; border: none; background: transparent;
   color: var(--text); font-size: var(--fs-md); min-height: 52px;
