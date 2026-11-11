@@ -127,14 +127,16 @@ test('short landscape visually reorders team inputs before the player disclosure
 });
 
 test('index loads separated styles and scripts in dependency order', () => {
-  assert.match(html, /<link rel="stylesheet" href="\.\/styles\.css">/);
+  assert.match(html, /<link rel="stylesheet" href="\.\/styles\.css\?v=\d+">/);
   assert.ok(html.indexOf('./formats.js') < html.indexOf('./app.js'));
   assert.doesNotMatch(html, /<style>|<script>/);
 });
 
 test('service worker caches every separated runtime file', () => {
   for (const file of ['./styles.css', './formats.js', './app.js']) {
-    assert.ok(serviceWorker.includes(`'${file}'`), `${file} should be cached`);
+    const asset = [...html.matchAll(/(?:src|href)="([^"]+)"/g)]
+      .map(match => match[1]).find(url => url.split('?')[0] === file);
+    assert.ok(asset && serviceWorker.includes(`'${asset}'`), `${file} should be cached at its HTML URL`);
   }
 });
 
