@@ -1,12 +1,12 @@
 /* Service worker: network-first for the page, styles, and scripts (so updates
    appear together), cache-first for assets. Falls back to cache offline. */
-const CACHE = 'pb-score-v7';
+const CACHE = 'pb-score-v8';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=7',
-  './formats.js?v=7',
-  './app.js?v=7',
+  './styles.css?v=8',
+  './formats.js?v=8',
+  './app.js?v=8',
   './manifest.webmanifest',
   './icon.svg',
   './icon-192.png',
