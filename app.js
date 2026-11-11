@@ -223,6 +223,12 @@ function pickFormat(id) {
   S.format = id;
   render();
 }
+function fillTeamName(team, picker) {
+  document.getElementById(`tname${team}`).value = picker.value;
+  picker.selectedIndex = 0;
+  captureSetupInputs();
+  save();
+}
 function togglePlayers() {
   captureSetupInputs();   // preserve typed names across the disclosure toggle
   playersOpen = !playersOpen;
@@ -516,7 +522,13 @@ function renderSetup() {
         <input class="row-input" id="p${ti}_${p}" placeholder="Player ${p + 1}" value="${esc(t[ti].players[p] || '')}" autocomplete="off" aria-label="${label} player ${p + 1}">`).join('') : '';
     return `
       <div class="team-card ${cls}">
-        <input class="row-input head" id="tname${ti}" list="team-name-presets" placeholder="${label}" value="${esc(t[ti].name || '')}" autocomplete="off" aria-label="${label} name">
+        <div class="team-name-row">
+          <input class="row-input head" id="tname${ti}" placeholder="${label}" value="${esc(t[ti].name || '')}" autocomplete="off" aria-label="${label} name">
+          <select class="team-picker" aria-label="Choose a preset for ${label}" onchange="fillTeamName(${ti}, this)">
+            <option value="" disabled selected>Pick team</option>
+            ${TEAM_NAME_PRESETS.map(name => `<option>${esc(name)}</option>`).join('')}
+          </select>
+        </div>
         ${asymmetric ? `<div class="team-size">Fields ${size} players</div>` : ''}
         ${players}
       </div>`;
@@ -536,9 +548,6 @@ function renderSetup() {
           ${card(0, 'a', 'Team A')}
           ${card(1, 'b', 'Team B')}
         </div>
-        <datalist id="team-name-presets">
-          ${TEAM_NAME_PRESETS.map(name => `<option value="${esc(name)}"></option>`).join('')}
-        </datalist>
       </div>
       <div class="setup-footer">
         <button class="start-btn" onclick="startGameFromSetup()">Start game</button>
