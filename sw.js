@@ -1,12 +1,12 @@
 /* Service worker: network-first for the page, styles, and scripts (so updates
    appear together), cache-first for assets. Falls back to cache offline. */
-const CACHE = 'pb-score-v6';
+const CACHE = 'pb-score-v7';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css',
-  './formats.js',
-  './app.js',
+  './styles.css?v=7',
+  './formats.js?v=7',
+  './app.js?v=7',
   './manifest.webmanifest',
   './icon.svg',
   './icon-192.png',
@@ -15,14 +15,14 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE).then((cache) => cache.addAll(ASSETS.map(url => new Request(url, { cache: 'reload' })))).then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('pb-score-v') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -44,7 +44,7 @@ self.addEventListener('fetch', (event) => {
     .some((file) => pathname.endsWith(file));
   if (request.mode === 'navigate' || runtimeFile) {
     event.respondWith(
-      fetch(request).then((response) => {
+      fetch(request, { cache: 'no-cache' }).then((response) => {
         const responseUrl = new URL(response.url || request.url);
         const sameOrigin = responseUrl.origin === self.location.origin;
         if (!response.ok || !sameOrigin) {
