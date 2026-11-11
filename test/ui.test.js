@@ -38,6 +38,32 @@ const freshGame = `S = freshState([
   { name: 'Team B', players: ['B1', 'B2', 'B3', 'B4'] }
 ], '4v4')`;
 
+test('10-point 3v3 plays nine 10-rally matchups before a golden point at 45-all', () => {
+  let h = harness();
+  h.run("pickFormat('3v3')");
+  assert.match(h.app.innerHTML, /10 every round<\/button>/);
+  h.run("pickFormat('3v3-10'); openRules()");
+  assert.match(h.app.innerHTML, /45–45/);
+  assert.equal(h.app.innerHTML.match(/10 points per matchup/g).length, 3);
+  h.run('closeRules(); startGameFromSetup()');
+  for (let round = 0; round < 3; round++) {
+    h = harness(h.storage);
+    assert.equal(h.run('S.format'), '3v3-10');
+    for (let matchup = 0; matchup < 3; matchup++) {
+      assert.equal(h.run('S.phase'), 'between');
+      assert.equal(h.run('S.round'), round);
+      assert.equal(h.run('S.matchup'), matchup);
+      h.run('startPlay(); for (let p = 0; p < 9; p++) point(p % 2)');
+      assert.equal(h.run('S.phase'), 'play');
+      h.run('point(1)');
+    }
+  }
+  assert.equal(h.run('S.overtime'), true);
+  assert.equal(h.run('S.scores.join("-")'), '45-45');
+  h.run('startPlay(); point(0)');
+  assert.equal(h.run('S.phase'), 'done');
+});
+
 test('scoring hint appears only after the first Start rallies', () => {
   const h = harness();
   h.run(`${freshGame}; startPlay()`);
@@ -47,6 +73,24 @@ test('scoring hint appears only after the first Start rallies', () => {
 
   h.run(`hideScoreHint(); S.phase = 'between'; startPlay()`);
   assert.doesNotMatch(h.app.innerHTML, /Tap the team that won the rally\./);
+});
+
+test('unnamed 3v3 pairings call one player number and carry the server into the next matchup', () => {
+  const h = harness();
+  h.run("pickFormat('3v3'); startGameFromSetup()");
+  assert.match(h.app.innerHTML, /<strong>Player 1<\/strong> from each team/);
+  h.run('startPlay(); for (let p = 0; p < 10; p++) point(p % 2)');
+  assert.match(h.app.innerHTML, /<strong>Player 2<\/strong> from each team/);
+  assert.match(h.app.innerHTML, /Team B serves next/);
+});
+
+test('unnamed 3v4 players are identified by team and position during rotations', () => {
+  const h = harness();
+  h.run("pickFormat('3v4'); startGameFromSetup(); startPlay(); for (let p = 0; p < 8; p++) point(p % 2)");
+  const sub = h.run('subOverlay()');
+  assert.match(sub, /Team B/);
+  assert.match(sub, /Player 2 subs on now/);
+  assert.match(sub, /taking over from Player 1/);
 });
 
 test('dismissing the scoring hint consumes the event without changing the score', () => {
